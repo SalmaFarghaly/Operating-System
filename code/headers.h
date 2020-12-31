@@ -15,6 +15,35 @@ typedef short bool;
 #define true 1
 #define false 1
 
+struct msgbuff
+{
+    long mtype;
+    char mtext[256];
+};
+
+struct algoMsgBuff 
+{
+    int algo;
+    int quantum;
+    long mtype;
+};
+struct process
+{
+    int id;
+    long pid; 
+    int arrivalTime;
+    int runTime;
+    int memSize;
+    int priority;
+
+};
+struct msgProcess{
+    long mtype;
+    struct process p;
+
+};
+
+
 #define SHKEY 300
 
 

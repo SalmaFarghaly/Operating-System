@@ -21,10 +21,12 @@ void cleanup(int signum)
 int main(int argc, char * argv[])
 {
     printf("Clock starting\n");
+    printf("Clk my pid%d \n",getpid());
     signal(SIGINT, cleanup);
     int clk = 0;
     //Create shared memory for one integer variable 4 bytes
     shmid = shmget(SHKEY, 4, IPC_CREAT | 0644);
+    // printf("CLKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK %d\n",shmid);
     if ((long)shmid == -1)
     {
         perror("Error in creating shm!");

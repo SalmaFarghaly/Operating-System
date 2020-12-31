@@ -1,0 +1,2 @@
+        Resource                                            #proj_ID
+Message Queue between Scheduler and Process generator -->       1

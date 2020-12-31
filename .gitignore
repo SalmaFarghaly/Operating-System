@@ -24,7 +24,7 @@
 *.a
 *.la
 *.lo
-ahags%P2bd*
+
 
 # Shared objects (inc. Windows DLLs)
 *.dll

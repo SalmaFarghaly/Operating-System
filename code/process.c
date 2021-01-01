@@ -7,12 +7,15 @@ int main(int agrc, char * argv[])
 {
     //check
     initClk();
-    
+    int oldtime = getClk();
     //TODO it needs to get the remaining time from somewhere
-    //remainingtime = ??;
+    remainingtime = atoi(argv[1]);    //Pass the remaining time as a parameter for the process
     while (remainingtime > 0)
     {
-        // remainingtime = ??;
+        if(oldtime+1 == getClk()){
+            remainingtime--;
+            oldtime=getClk();
+        }
     }
     
     destroyClk(false);

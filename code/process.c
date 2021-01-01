@@ -12,9 +12,9 @@ int main(int agrc, char * argv[])
     remainingtime = atoi(argv[1]);    //Pass the remaining time as a parameter for the process
     while (remainingtime > 0)
     {
-        if(oldtime+1 == getClk()){
-            remainingtime--;
-            oldtime=getClk();
+        if(oldtime+1 == getClk()){  //Check if 1 second has passed
+            remainingtime--;        
+            oldtime=getClk();       
         }
     }
     

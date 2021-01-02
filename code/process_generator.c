@@ -120,6 +120,8 @@ int main(int argc, char * argv[])
                 if (send_val == -1)
                     perror("Process Generator: Errror in sending algo details to Scheduler");
 
+                int sentProcesses = 0;
+
                 while(1){
                     cur_clk= getClk();
                     if(cur_clk!=prev_clk){
@@ -134,10 +136,18 @@ int main(int argc, char * argv[])
                                 int send_val = msgsnd(PG2S_msqid, &p, sizeof(p.p), !IPC_NOWAIT);
                                 if (send_val == -1)
                                     perror("Process Generator: Errror in sending process  to Scheduler");
-
+                                sentProcesses+=1;
                             }
                         }
+                         if (sentProcesses == proc_cnt){
+                                printf("\n");
+                                //printf("halloooooooooooooooooooooooooooooooo");
+                                printf("\nDone Sending Processes, About to Destroy Message queue\n");
+                                msgctl(PG2S_msqid, IPC_RMID, (struct msqid_ds *)0);
+                                break;
+                            }
                         prev_clk=cur_clk;
+                        
 
 
                     }
@@ -231,4 +241,7 @@ void getProcessesCnt(char*file_name){
 void clearResources(int signum)
 {
     //TODO Clears all resources in case of interruption
+    printf("\nAbout to Destroy Message queue\n");
+    msgctl(PG2S_msqid, IPC_RMID, (struct msqid_ds *)0);
+    exit(0);
 }

@@ -5,7 +5,7 @@ int remainingtime;
 
 int main(int agrc, char * argv[])
 {
-    //check
+    //check..
     initClk();
     int oldtime = getClk();
     //TODO it needs to get the remaining time from somewhere

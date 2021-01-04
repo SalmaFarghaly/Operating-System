@@ -22,9 +22,7 @@ git add .
 git commit --m "commit"
 git pull origin --branch_name--
 git push origin --branch_name--
-```
   Example:
   git pull origin HPF
   git push origin HPF
-```
 ```

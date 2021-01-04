@@ -1,4 +1,4 @@
-##This file includes the git commands that we will use more frequently
+## This file includes the git commands that we will use more frequently
 
 ### for getting code from remote repo 
 git add .

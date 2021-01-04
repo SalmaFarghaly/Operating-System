@@ -1,3 +1,5 @@
+##This file includes the git commands that we will use more frequently
+
 ### for getting code from remote repo 
 git add .
 git commit --m "commit"
@@ -15,8 +17,8 @@ git add .
 git commit --m "commit"
 git pull origin --branch_name--
 git push origin --branch_name--
-
-```Example:
+```
+  Example:
   git pull origin HPF
   git push origin HPF
 ```

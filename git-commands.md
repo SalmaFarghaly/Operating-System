@@ -26,3 +26,7 @@ git push origin --branch_name--
   git pull origin HPF
   git push origin HPF
 ```
+### for getting branches on remote repo
+```
+git fetch
+```

@@ -13,12 +13,14 @@
 
 typedef short bool;
 #define true 1
-#define false 1
+#define false 0
+
+
 
 struct msgbuff
 {
     long mtype;
-    char mtext[256];
+    int val;
 };
 
 struct algoMsgBuff 
@@ -27,6 +29,10 @@ struct algoMsgBuff
     int quantum;
     long mtype;
 };
+// enum status{
+
+
+// };
 struct process
 {
     int id;
@@ -35,6 +41,9 @@ struct process
     int runTime;
     int memSize;
     int priority;
+    int remainingTime;
+    int status; //1 Running 0 waiting -1 finished
+
 
 };
 struct msgProcess{

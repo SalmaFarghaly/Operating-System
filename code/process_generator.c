@@ -23,7 +23,7 @@ int prev_clk=-1;
 
 
 
-void clearResources(int);
+void clearResources();
 void readProcessesData(char*file_name,struct process*processes);
 void splitTokens(char*str,struct process*pro);
 void getProcessesCnt();
@@ -32,7 +32,7 @@ int main(int argc, char * argv[])
 {
     signal(SIGINT, clearResources);
     // 1. Read the input files.
-    char*file_name="testcases/processes1.txt";
+    char*file_name="testcases/processes2.txt";
     getProcessesCnt(file_name);
     struct process*processes=(struct process*)malloc(proc_cnt*sizeof(struct process));
     readProcessesData(file_name,processes);
@@ -113,28 +113,30 @@ int main(int argc, char * argv[])
                 message.algo=choice;
                 message.quantum=quantum;
                 message.mtype=sch_pid%10000;
+                message.num_proc=proc_cnt;
 
                 // Send message to the scheduler contains which algorithm to run and the parameters of the algorithm
-                int send_val = msgsnd(PG2S_msqid, &message, sizeof(message.algo)+sizeof(message.quantum), !IPC_NOWAIT);
+                int send_val = msgsnd(PG2S_msqid, &message, sizeof(message.algo)+sizeof(message.quantum)+sizeof(proc_cnt), !IPC_NOWAIT);
 
                 if (send_val == -1)
                     perror("Process Generator: Errror in sending algo details to Scheduler");
 
                 int sentProcesses = 0;
-                int temp_process=0;
-                // sleep(1);
 
                 while(1){
                     cur_clk= getClk();
 
                     if(cur_clk!=prev_clk&&cur_clk!=0){
-                        // loop over the processes and send the process whose arrival time
-                        // is equal to the current clk to the scheduler through the message queue
+                        // send the count of processes that their arrival time =clk;
                         struct msgbuff m;
                         m.val=0;
-                        for(int k=0;k<proc_cnt;k++){
-                            if(processes[k].arrivalTime==cur_clk){
-                                m.val++;
+                        if(proc_cnt==sentProcesses)
+                            m.val=-1;
+                        else{
+                            for(int k=0;k<proc_cnt;k++){
+                                if(processes[k].arrivalTime==cur_clk){
+                                    m.val++;
+                                }
                             }
                         }
                         m.mtype=sch_pid;
@@ -142,6 +144,8 @@ int main(int argc, char * argv[])
                         int send_val = msgsnd(PG2S_msqid, &m, sizeof(m.val), !IPC_NOWAIT);
                         if (send_val == -1)
                             perror("Process Generator: Errror in sending process  to Scheduler");
+                        // loop over the processes and send the process whose arrival time
+                        // is equal to the current clk to the scheduler through the message queue
                         for(int k=0;k<proc_cnt;k++){
                             if(processes[k].arrivalTime==cur_clk){
                                 struct msgProcess p;
@@ -152,53 +156,29 @@ int main(int argc, char * argv[])
                                 if (send_val == -1)
                                     perror("Process Generator: Errror in sending process  to Scheduler");
                                 sentProcesses+=1;
-                                temp_process++;
                             }
                         }
-                        // printf("Proccc %d snet%d\n",proc_cnt,sentProcesses);
-                        // if(temp_process==0){
-                           
-                        //     struct msgbuff m;
-                        //     m.val=0;
-                        //     m.mtype=sch_pid;
-                        //     printf("PG:: m.val %d , clk %d\n",m.val,getClk());
-                        //     int send_val = msgsnd(PG2S_msqid, &m, sizeof(m.val), !IPC_NOWAIT);
-                        //     if (send_val == -1)
-                        //     perror("Process Generator: Errror in sending process  to Scheduler");
-                        // }
-                        if (sentProcesses == proc_cnt){
-                                printf("\n");
-                                struct msgbuff m;
-                            m.val=-1;
-                            m.mtype=sch_pid;
-                            printf("PG:: m.val %d , clk %d\n",m.val,getClk());
-                            int send_val = msgsnd(PG2S_msqid, &m, sizeof(m.val), !IPC_NOWAIT);
-                            if (send_val == -1)
-                            perror("Process Generator: Errror in sending process  to Scheduler");
-                                // printf("halloooooooooooooooooooooooooooooooo");
-                                //sleep 1 second before termination so the scheduler can read the last message
-                                sleep(2);
-                                printf("\nDone Sending Processes, About to Destroy Message queue\n");
-                                msgctl(PG2S_msqid, IPC_RMID, (struct msqid_ds *)0);
-                                break;
-                        }
+                        printf("sentProcesssss %d,proc_Cnt %d clk %d\n",sentProcesses,proc_cnt,getClk());
                         prev_clk=cur_clk;
-                        temp_process=0;
                         
 
 
                     }
+                    // Check if scheduler has finished then the process generator should terminate and clear the resources.
+                    int status;
+                    pid_t result=waitpid(sch_pid,&status,WNOHANG);
+                    if(result!=0 && result!=-1){
+                        destroyClk(true);
+                        clearResources();
+                        msgctl(PG2S_msqid, IPC_RMID, (struct msqid_ds *)0);
+                        break;
+                    }
 
 
                 }
-                destroyClk(true);
+               
 
             }
-            // TODO Generation Main Loop
-            // 5. Create a data structure for processes and provide it with its parameters.
-
-            // 6. Send the information to the scheduler at the appropriate time.
-            // 7. Clear clock resources
 
 
 
@@ -278,7 +258,7 @@ void getProcessesCnt(char*file_name){
     fclose(fileptr); //close file.
 }
 
-void clearResources(int signum)
+void clearResources()
 {
     //TODO Clears all resources in case of interruption
     printf("\nAbout to Destroy Message queue\n");

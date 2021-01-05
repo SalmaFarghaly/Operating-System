@@ -1,5 +1,6 @@
 #include "headers.h"
 
+struct Node;
 
 struct Node{
     struct process* processObj;
@@ -34,7 +35,7 @@ void Node_Destructor(struct Node* n){
 
 //Checks if queue is empty
 bool isEmpty(struct Queue* q){
-    if(q->headPtr=NULL){
+    if(q->headPtr==NULL){
         return true;
     }else{
         return false;
@@ -85,3 +86,11 @@ void Queue_Destructor(struct Queue* q){
     }
     free(q);
 }
+
+// void print_Queue(struct Queue*q){
+//     struct Node*cur_ptr=q->headPtr;
+//     while(cur_ptr!=NULL){
+//         printf(cur_ptr->processObj);
+//         cur_ptr=cur_ptr->nextNodePtr;
+//     }
+// }

@@ -121,32 +121,69 @@ int main(int argc, char * argv[])
                     perror("Process Generator: Errror in sending algo details to Scheduler");
 
                 int sentProcesses = 0;
+                int temp_process=0;
+                // sleep(1);
 
                 while(1){
                     cur_clk= getClk();
-                    if(cur_clk!=prev_clk){
+
+                    if(cur_clk!=prev_clk&&cur_clk!=0){
                         // loop over the processes and send the process whose arrival time
                         // is equal to the current clk to the scheduler through the message queue
+                        struct msgbuff m;
+                        m.val=0;
+                        for(int k=0;k<proc_cnt;k++){
+                            if(processes[k].arrivalTime==cur_clk){
+                                m.val++;
+                            }
+                        }
+                        m.mtype=sch_pid;
+                        printf("PG:: m.val %d , clk %d\n",m.val,getClk());
+                        int send_val = msgsnd(PG2S_msqid, &m, sizeof(m.val), !IPC_NOWAIT);
+                        if (send_val == -1)
+                            perror("Process Generator: Errror in sending process  to Scheduler");
                         for(int k=0;k<proc_cnt;k++){
                             if(processes[k].arrivalTime==cur_clk){
                                 struct msgProcess p;
                                 p.p=processes[k];
                                 p.mtype=sch_pid;
                                 printf("\nPG :: The current time is %d\n",cur_clk);
-                                int send_val = msgsnd(PG2S_msqid, &p, sizeof(p.p), !IPC_NOWAIT);
+                                send_val = msgsnd(PG2S_msqid, &p, sizeof(p.p), !IPC_NOWAIT);
                                 if (send_val == -1)
                                     perror("Process Generator: Errror in sending process  to Scheduler");
                                 sentProcesses+=1;
+                                temp_process++;
                             }
                         }
-                         if (sentProcesses == proc_cnt){
+                        // printf("Proccc %d snet%d\n",proc_cnt,sentProcesses);
+                        // if(temp_process==0){
+                           
+                        //     struct msgbuff m;
+                        //     m.val=0;
+                        //     m.mtype=sch_pid;
+                        //     printf("PG:: m.val %d , clk %d\n",m.val,getClk());
+                        //     int send_val = msgsnd(PG2S_msqid, &m, sizeof(m.val), !IPC_NOWAIT);
+                        //     if (send_val == -1)
+                        //     perror("Process Generator: Errror in sending process  to Scheduler");
+                        // }
+                        if (sentProcesses == proc_cnt){
                                 printf("\n");
-                                //printf("halloooooooooooooooooooooooooooooooo");
+                                struct msgbuff m;
+                            m.val=-1;
+                            m.mtype=sch_pid;
+                            printf("PG:: m.val %d , clk %d\n",m.val,getClk());
+                            int send_val = msgsnd(PG2S_msqid, &m, sizeof(m.val), !IPC_NOWAIT);
+                            if (send_val == -1)
+                            perror("Process Generator: Errror in sending process  to Scheduler");
+                                // printf("halloooooooooooooooooooooooooooooooo");
+                                //sleep 1 second before termination so the scheduler can read the last message
+                                sleep(2);
                                 printf("\nDone Sending Processes, About to Destroy Message queue\n");
                                 msgctl(PG2S_msqid, IPC_RMID, (struct msqid_ds *)0);
                                 break;
-                            }
+                        }
                         prev_clk=cur_clk;
+                        temp_process=0;
                         
 
 
@@ -207,8 +244,10 @@ void splitTokens(char*str,struct process*p){
         p->id=token;
     else if(j==1)
         p->arrivalTime=token;
-    else if (j==2)
+    else if (j==2){
         p->runTime=token;
+        p->remainingTime=token;
+    }
     else if(j==3)
         p->priority=token;
     else 
@@ -217,6 +256,7 @@ void splitTokens(char*str,struct process*p){
     j++;
   }
   p->pid=-1;
+  p->status=0;
 }
 
 // This function counts the Number of processes that are read from the processes text file. 

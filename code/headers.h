@@ -27,6 +27,7 @@ struct algoMsgBuff
 {
     int algo;
     int quantum;
+    int num_proc;
     long mtype;
 };
 // enum status{

@@ -35,6 +35,7 @@ int main(int argc, char * argv[])
     
     struct Queue*RR_Queue=Queue_Constructor();
     int cur_clk=getClk();
+    bool process_done = false;
     int prev_clk=-1;
     int cycle_num=0;
     int k=0;
@@ -87,13 +88,20 @@ int main(int argc, char * argv[])
         // printf("prunninngggggggggggg %d\n",p_running);
         if(RR_allFinished(RR_Queue)==false&&p_running==false){
             printf("Process %d will run ,clk %d\n",cur_process->id,getClk());
-            cur_process->pid=fork();
-            int cur_pid=cur_process->pid;
-            if(cur_pid==0){
-                sprintf(number_str,"%d",cur_process->remainingTime);
-                char*args[]={"./process.out",number_str};
-                execv(args[0],args);
-                exit(0);
+            if(cur_process->pid == -1){
+                cur_process->pid=fork();
+                int cur_pid=cur_process->pid;
+                if(cur_pid==0){
+                    sprintf(number_str,"%d",cur_process->remainingTime);
+                    char*args[]={"./process.out",number_str};
+                    execv(args[0],args);
+                    exit(0);
+                }
+            }
+            else{
+                printf("\nProcess %d Resume at clk %d\n",cur_process->id,getClk());
+                kill(cur_process->pid,SIGCONT);                
+
             }
             
             p_running=true;
@@ -107,9 +115,13 @@ int main(int argc, char * argv[])
                 cur_process->remainingTime-=1;
                 tempQuantum-=1;
                 printf("Quantummmmmmm%d,clkkkk%d\n",tempQuantum,getClk());
-                if(cur_process->remainingTime==0){
+                if(cur_process->remainingTime==0){ // process finished execution
                     // printf("Remaining Tirmrrr")
+                    process_done = true;
+                    p_running = false;
                     cur_process->status=-1;
+                    kill(cur_process->pid,SIGKILL);
+                    printf("\nProcess %d Killed at clk %d\n",cur_process->id,getClk());
                     cur_node=cur_node->nextNodePtr;
                     if(cur_node!=NULL){
                         while(cur_node->processObj->status==-1){
@@ -117,17 +129,21 @@ int main(int argc, char * argv[])
                             cur_node=cur_node->nextNodePtr;
                         }
                     }
-                    if (cur_node==NULL){
+                    if (cur_node==NULL){ // return to first process again
                         cur_node=RR_Queue->headPtr;
+                        
                     }
+                    //cur_process=cur_node->processObj;
                 }
             }
         }
-        if(tempQuantum==0){
+        if(tempQuantum==0 ){ // process finished its quantum
             printf("pppppppppppppppppppppppppppp\n");
             tempQuantum=quantum;
             p_running=false;
             cur_node=cur_node->nextNodePtr;
+            kill(cur_process->pid,SIGSTOP);
+            printf("\nProcess %d Paused at clk %d\n",cur_process->id,getClk());
             if(cur_node!=NULL){
                 while(cur_node->processObj->status==-1){
                     if(cur_node==NULL)break;
@@ -136,8 +152,12 @@ int main(int argc, char * argv[])
             }
             if (cur_node==NULL){
                 cur_node=RR_Queue->headPtr;
+               
+                
             }
+            cur_process=cur_node->processObj;
         }
+        process_done = false;
     }
     
     destroyClk(true);

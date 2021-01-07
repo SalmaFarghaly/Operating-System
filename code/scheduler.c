@@ -1,7 +1,9 @@
-// #include "headers.h"
-#include "Queue.h"
+#include "headers.h"
 #include "sys/msg.h"
 #include "stdio.h"
+
+#include "PriorityQueue.h"
+#include "Queue.h"
 
 
 // id of message queue betweeen scheduler and process generator
@@ -16,6 +18,12 @@ int num_proc=0;
 //===============Functions used by RoundRobin Function
 void RoundRobin();
 bool RR_allFinished(struct Queue*q);
+
+//===========Variables used by HPF
+void HPF();
+bool HPF_isFinished = false;
+
+void SRTN();
 
 
 int main(int argc, char * argv[])
@@ -36,6 +44,12 @@ int main(int argc, char * argv[])
     num_proc=message.num_proc;
     if(message.algo==1)
         RoundRobin();
+    if(message.algo==2)
+        SRTN();
+    if(message.algo==3){
+        printf("start HPF algo: %d \n",message.algo);
+        HPF();
+    }
 
     
 }
@@ -53,10 +67,10 @@ bool RR_allFinished(struct Queue*q){
     return true; // all processes have finished.
 
 }
-void RoundRobin(){
 
-    struct msgProcess *arr=(struct msgProcess*)malloc(num_proc*sizeof(struct msgProcess));
+void RoundRobin(){
     
+    struct msgProcess *arr=(struct msgProcess*)malloc(num_proc*sizeof(struct msgProcess));
     struct Queue*RR_Queue=Queue_Constructor();
     int tempQuantum=quantum;
     struct process*cur_process;
@@ -181,9 +195,205 @@ void RoundRobin(){
     exit(0);
     destroyClk(true);
     
+}
 
+void HPFSIGCHLDHandler(int signum){
+    printf("process is being terminated .......................................\n");
+    HPF_isFinished=true;
+    signal(SIGCHLD,HPFSIGCHLDHandler);
+}
 
+void HPFSIGCHLDHandler2(int signum){
+    printf("process is starting.......................................\n");
+    //HPF_isFinished=true;
+    signal(SIGUSR1,HPFSIGCHLDHandler);
+}
 
+void HPF(){
+    struct msgProcess *arr=(struct msgProcess*)malloc(num_proc*sizeof(struct msgProcess));
+    //struct Queue*RR_Queue=Queue_Constructor();
+
+    int tempQuantum=quantum;
+    struct process*cur_process=NULL;
+    //struct Node*cur_node;
+    struct pnode * pQHead=NULL;
+    struct pnode * cur_node=NULL;
+    int y=0;
+    int rec=1;
+    int idx=0;
+    signal(SIGCHLD,HPFSIGCHLDHandler);
+    signal(SIGUSR1,HPFSIGCHLDHandler2);
+    while(1){
+        // Recieve a message first from the process_generator telling it how many processes will arrive in this clk cycle
+        // it will recieve -1 if there is no more processes to arrive later.
+        struct msgbuff m;
+        int rec_val=msgrcv(PG2S_msqid , &m, sizeof(m.val),0, !IPC_NOWAIT);
+        int temp_val=m.val;
+        if(rec!=-1)rec=m.val;
+        // Thie while loop is responsible for recieving the processes'data.
+        while(temp_val!=0 && temp_val!=-1){
+            rec_val=msgrcv(PG2S_msqid , &arr[idx], sizeof(arr[idx].p),0, !IPC_NOWAIT);
+
+            if(rec_val!=-1){  
+                    printf("SCH::clk %d process id %d,arrival %d,runTime %d,priority %d,memsize %d,pid %ld\n",getClk()
+                                    ,arr[idx].p.id,arr[idx].p.arrivalTime,arr[idx].p.runTime,arr[idx].p.priority,arr[idx].p.memSize,arr[idx].p.pid);
+            }
+            // Enqueue the recieved processes in RR_Queue.
+            if(PQisEmpty(&pQHead)){
+                pQHead = newNode(arr[idx].p,arr[idx].p.priority);
+            }else{
+                push(&pQHead,arr[idx].p,arr[idx].p.priority);
+            }
+            //enqueue(RR_Queue,&arr[idx].p);
+            idx++;
+            // if this process is the first arrived one , we should place it at headptr.
+            if(y==0){
+                cur_node=pQHead;
+                cur_process=&cur_node->processobj;
+            }
+            y+=1;
+            temp_val-=1;
+
+        }
+
+       
+        if(pQHead!=NULL){
+            if(cur_process == NULL){
+                *cur_process = peek(&pQHead);
+            }
+            printf("current process = %d , status = %d\n",cur_process->id,cur_process->status);
+            if(cur_process!=NULL && cur_process->status==0){
+                printf("creating a process........\n");
+                printf("Process %d will run ,clk %d\n",cur_process->id,getClk());
+                *cur_process = peek(&pQHead);
+                sprintf(number_str,"%d",cur_process->remainingTime);
+                char*args[]={"./process.out",number_str};
+                printf("remtime = %s.... \n",number_str);
+                int err = execv(args[0],args);
+                printf("error..... %d \n ",err);
+                p_running=true;
+                cur_process->status=1;
+            }
+            if (cur_process != NULL && HPF_isFinished==true){
+                cur_process->status = -1;
+                pop(&pQHead);
+                HPF_isFinished=false;
+                *cur_process = peek(&pQHead);
+            }
+        }
+        if(PQisEmpty(&pQHead)==true&&rec==-1){
+            printf("SCH::EXITING\n");
+            exit(0);
+        }
+    }
+    printf("EXITING\n");
+    exit(0);
+    destroyClk(true);
+}
+
+void SRTN(){
+    struct msgProcess *arr=(struct msgProcess*)malloc(num_proc*sizeof(struct msgProcess));
+    //struct Queue*RR_Queue=Queue_Constructor();
+
+    int tempQuantum=quantum;
+    struct process*cur_process=NULL;
+    //struct Node*cur_node;
+    struct pnode * pQHead=NULL;
+    struct pnode * cur_node=NULL;
+    int y=0;
+    int rec=1;
+    int idx=0;
+    signal(SIGCHLD,HPFSIGCHLDHandler);
+    signal(SIGUSR1,HPFSIGCHLDHandler2);
+    int oldtime=getClk();
+    bool firsttime=true;
+    while(1){
+        // Recieve a message first from the process_generator telling it how many processes will arrive in this clk cycle
+        // it will recieve -1 if there is no more processes to arrive later.
+        struct msgbuff m;
+        int rec_val=msgrcv(PG2S_msqid , &m, sizeof(m.val),0, !IPC_NOWAIT);
+        int temp_val=m.val;
+        if(rec!=-1)rec=m.val;
+        // Thie while loop is responsible for recieving the processes'data.
+        while(temp_val!=0 && temp_val!=-1){
+            rec_val=msgrcv(PG2S_msqid , &arr[idx], sizeof(arr[idx].p),0, !IPC_NOWAIT);
+
+            if(rec_val!=-1){  
+                    printf("SCH::clk %d process id %d,arrival %d,runTime %d,priority %d,memsize %d,pid %ld\n",getClk()
+                                    ,arr[idx].p.id,arr[idx].p.arrivalTime,arr[idx].p.runTime,arr[idx].p.priority,arr[idx].p.memSize,arr[idx].p.pid);
+            }
+            // Enqueue the recieved processes in RR_Queue.
+            if(PQisEmpty(&pQHead)){
+                pQHead = newNode(arr[idx].p,arr[idx].p.remainingTime);
+            }else{
+                push(&pQHead,arr[idx].p,arr[idx].p.remainingTime);
+            }
+            //enqueue(RR_Queue,&arr[idx].p);
+            idx++;
+            // if this process is the first arrived one , we should place it at headptr.
+            if(y==0){
+                cur_node=pQHead;
+                cur_process=&cur_node->processobj;
+            }
+            y+=1;
+            temp_val-=1;
+
+        }
+
+        printf("finished receiving.... \n");
+        if(pQHead!=NULL){
+            if(cur_process != NULL){
+                printf("enter... \n");
+                cur_process->remainingTime=cur_process->remainingTime -1;
+                struct process * temp;
+                temp = cur_process;
+                *cur_process = peek(&pQHead);
+                printf("dbgg1... \n");
+                if(cur_process!=temp||firsttime==true){
+                    printf("dbgg2... \n");
+                    firsttime=false;
+                    kill(temp->pid,SIGSTOP);
+                    printf("Process %d will run ,clk %d\n",cur_process->id,getClk());
+                    //fork a process and runs it giving it's remaining time as an argument
+                    if(cur_process->pid == -1){
+                        cur_process->pid=fork();
+                        int cur_pid=cur_process->pid;
+                        if(cur_pid==0){
+                            sprintf(number_str,"%d",cur_process->remainingTime);
+                            char*args[]={"./process.out",number_str};
+                            execv(args[0],args);
+                            exit(0);
+                        }
+                    }
+                    // if the process was alraedy forked but blocked 
+                    // then we should awake it.
+                    else{
+                        printf("\nProcess %d Resume at clk %d\n",cur_process->id,getClk());
+                        kill(cur_process->pid,SIGCONT);                
+
+                    }
+                        
+                    p_running=true;
+                    cur_process->status=1;
+                
+            }
+                
+                //printf("current process = %d , status = %d\n",cur_process->id,cur_process->status);
+    
+                
+                if (cur_process != NULL && HPF_isFinished==true){
+                    cur_process->status = -1;
+                    pop(&pQHead);
+                    HPF_isFinished=false;
+                    *cur_process = peek(&pQHead);
+                }
+            }
+        }
+    }
+        if(PQisEmpty(&pQHead)==true&&rec==-1){
+            printf("SCH::EXITING\n");
+            exit(0);
+        }
 
 
 }

@@ -6,6 +6,7 @@
 #include <sys/shm.h>
 #include <sys/sem.h>
 #include <sys/msg.h>
+#pragma once
 #include <sys/wait.h>
 #include <stdlib.h>
 #include <unistd.h>

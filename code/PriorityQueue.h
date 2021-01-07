@@ -1,12 +1,14 @@
+
+
 #include "headers.h"
 
-typedef struct node { 
+typedef struct pnode { 
     struct process processobj; 
   
     // Lower values indicate higher priority 
     int priority; 
   
-    struct node* next; 
+    struct pnode* next; 
   
 } Node; 
   
@@ -69,7 +71,7 @@ void push(Node** head, struct process proc , int p)
 } 
   
 // Function to check is list is empty 
-int isEmpty(Node** head) 
+int PQisEmpty(Node** head) 
 { 
     return (*head) == NULL; 
 }

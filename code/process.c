@@ -2,10 +2,13 @@
 /* Modify this file as needed*/
 int remainingtime;
 
+void handler(int signum){
+    printf("continuinggggggg........................\n");
+}
 
 int main(int agrc, char * argv[])
 {
-    //signal(SIGSTOP,handler);
+    signal(SIGCONT,handler);
     //check..
     initClk();
     printf("process created.......%d\n",getpid());
@@ -14,8 +17,7 @@ int main(int agrc, char * argv[])
     remainingtime = atoi(argv[1]);    //Pass the remaining time as a parameter for the process
     while (remainingtime > 0)
     {
-
-        if(oldtime+1 == getClk()){  //Check if 1 second has passed
+        if(getClk()>oldtime){  //Check if 1 second has passed
             remainingtime--;        
             oldtime=getClk();     
             

@@ -349,9 +349,25 @@ void SRTN(){
                 cur_process->status = -1;
                 pop(&pQHead);
                 HPF_isFinished=false;
-                *cur_process = peek(&pQHead);
+                if(pQHead==NULL){
+                    printf("no process available...\n");
+                    cur_process=NULL;
+                }else{
+                    *cur_process = peek(&pQHead);
+                }
+                if(cur_process==NULL){
+                    printf("no process available...\n");
+                }
                 p_running=false;
-                cur_process->remainingTime++;
+                if(cur_process!=NULL){
+                    cur_process->remainingTime++;
+                }
+        }
+        if(cur_process==NULL && pQHead!=NULL){
+            printf("Here.......................\n");
+            cur_node=pQHead;
+            cur_process=&cur_node->processobj;
+            printf("Here.......................2\n");
         }
         if((pQHead!=NULL || p_running==false)&&cur_process!=NULL){
             printf("old process pid = %ld...remaining time = %d....\n",cur_process->pid,cur_process->remainingTime);
@@ -381,7 +397,7 @@ void SRTN(){
                 // then we should awake it.
                 else{
                     printf("\nProcess %d Resume at clk %d\n",cur_process->id,getClk());
-                    kill(cur_process->pid,SIGCONT);                
+                    kill(cur_process->pid,SIGCONT);             
 
                 }
                 

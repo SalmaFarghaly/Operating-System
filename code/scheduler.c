@@ -12,6 +12,7 @@ int PG2S_msqid;
 int quantum=0;
 bool p_running=false;
 char number_str[10];
+char number_str2[10];
 int num_proc=0;
 
 
@@ -25,6 +26,7 @@ bool HPF_isFinished = false;
 
 void SRTN();
 
+void handler(int signum);
 
 int main(int argc, char * argv[])
 {
@@ -197,16 +199,10 @@ void RoundRobin(){
     
 }
 
-void HPFSIGCHLDHandler(int signum){
-    printf("process is being terminated .......................................\n");
+void handler(int signum){
+    printf("Termination signal received  .......................................\n");
     HPF_isFinished=true;
-    signal(SIGCHLD,HPFSIGCHLDHandler);
-}
-
-void HPFSIGCHLDHandler2(int signum){
-    printf("process is starting.......................................\n");
-    //HPF_isFinished=true;
-    signal(SIGUSR1,HPFSIGCHLDHandler);
+    signal(SIGUSR1,handler);
 }
 
 void HPF(){
@@ -221,8 +217,8 @@ void HPF(){
     int y=0;
     int rec=1;
     int idx=0;
-    signal(SIGCHLD,HPFSIGCHLDHandler);
-    signal(SIGUSR1,HPFSIGCHLDHandler2);
+    signal(SIGUSR1,handler);
+    printf("my pid is %d....\n",getpid());
     while(1){
         // Recieve a message first from the process_generator telling it how many processes will arrive in this clk cycle
         // it will recieve -1 if there is no more processes to arrive later.
@@ -266,11 +262,16 @@ void HPF(){
                 printf("creating a process........\n");
                 printf("Process %d will run ,clk %d\n",cur_process->id,getClk());
                 *cur_process = peek(&pQHead);
-                sprintf(number_str,"%d",cur_process->remainingTime);
-                char*args[]={"./process.out",number_str};
-                printf("remtime = %s.... \n",number_str);
-                int err = execv(args[0],args);
-                printf("error..... %d \n ",err);
+                if(cur_process->pid == -1){
+                cur_process->pid=fork();
+                int cur_pid=cur_process->pid;
+                    if(cur_pid==0){
+                        sprintf(number_str,"%d",cur_process->remainingTime);
+                        char*args[]={"./process.out",number_str,NULL};
+                        execv(args[0],args);
+                        exit(0);
+                    }
+                }
                 p_running=true;
                 cur_process->status=1;
             }
@@ -303,10 +304,9 @@ void SRTN(){
     int y=0;
     int rec=1;
     int idx=0;
-    signal(SIGCHLD,HPFSIGCHLDHandler);
-    signal(SIGUSR1,HPFSIGCHLDHandler2);
-    int oldtime=getClk();
-    bool firsttime=true;
+    signal(SIGUSR1,handler);
+    printf("my pid is %d....\n",getpid());
+    
     while(1){
         // Recieve a message first from the process_generator telling it how many processes will arrive in this clk cycle
         // it will recieve -1 if there is no more processes to arrive later.
@@ -315,6 +315,7 @@ void SRTN(){
         int temp_val=m.val;
         if(rec!=-1)rec=m.val;
         // Thie while loop is responsible for recieving the processes'data.
+        
         while(temp_val!=0 && temp_val!=-1){
             rec_val=msgrcv(PG2S_msqid , &arr[idx], sizeof(arr[idx].p),0, !IPC_NOWAIT);
 
@@ -339,61 +340,239 @@ void SRTN(){
             temp_val-=1;
 
         }
-
-        printf("finished receiving.... \n");
-        if(pQHead!=NULL){
-            if(cur_process != NULL){
-                printf("enter... \n");
-                cur_process->remainingTime=cur_process->remainingTime -1;
-                struct process * temp;
-                temp = cur_process;
+        if(cur_process!=NULL){
+            cur_process->remainingTime-=1;
+            printf("remainingtime=%d......\n",cur_process->remainingTime);
+        }
+        if (cur_process != NULL && HPF_isFinished==true){
+                printf("poping terminated process...\n");
+                cur_process->status = -1;
+                pop(&pQHead);
+                HPF_isFinished=false;
                 *cur_process = peek(&pQHead);
-                printf("dbgg1... \n");
-                if(cur_process!=temp||firsttime==true){
-                    printf("dbgg2... \n");
-                    firsttime=false;
+                p_running=false;
+                cur_process->remainingTime++;
+        }
+        if((pQHead!=NULL || p_running==false)&&cur_process!=NULL){
+            printf("old process pid = %ld...remaining time = %d....\n",cur_process->pid,cur_process->remainingTime);
+            struct process* temp = cur_process;
+            cur_process = &pQHead->processobj;
+            printf("new process pid = %ld...remaining time = %d....\n",cur_process->pid,cur_process->remainingTime);
+            
+            if(temp->pid!=cur_process->pid || p_running == false){
+                printf("entered...\n");
+                if(p_running){
                     kill(temp->pid,SIGSTOP);
-                    printf("Process %d will run ,clk %d\n",cur_process->id,getClk());
-                    //fork a process and runs it giving it's remaining time as an argument
-                    if(cur_process->pid == -1){
-                        cur_process->pid=fork();
-                        int cur_pid=cur_process->pid;
-                        if(cur_pid==0){
-                            sprintf(number_str,"%d",cur_process->remainingTime);
-                            char*args[]={"./process.out",number_str};
-                            execv(args[0],args);
-                            exit(0);
-                        }
-                    }
-                    // if the process was alraedy forked but blocked 
-                    // then we should awake it.
-                    else{
-                        printf("\nProcess %d Resume at clk %d\n",cur_process->id,getClk());
-                        kill(cur_process->pid,SIGCONT);                
-
-                    }
-                        
-                    p_running=true;
-                    cur_process->status=1;
-                
-            }
-                
-                //printf("current process = %d , status = %d\n",cur_process->id,cur_process->status);
-    
-                
-                if (cur_process != NULL && HPF_isFinished==true){
-                    cur_process->status = -1;
-                    pop(&pQHead);
-                    HPF_isFinished=false;
-                    *cur_process = peek(&pQHead);
+                    printf("process switch......................%ld, %d\n",temp->pid,getppid());
                 }
+                printf("Process %d will run ,clk %d\n",cur_process->id,getClk());
+                //fork a process and runs it giving it's remaining time as an argument
+                if(cur_process->pid == -1){
+                    cur_process->pid=fork();
+                    int cur_pid=cur_process->pid;
+                    if(cur_pid==0){
+                        sprintf(number_str,"%d",cur_process->remainingTime);
+                        char*args[]={"./process.out",number_str,NULL};
+                        int err = execvp(args[0],args);
+                        exit(0);
+                    }
+                }
+                // if the process was alraedy forked but blocked 
+                // then we should awake it.
+                else{
+                    printf("\nProcess %d Resume at clk %d\n",cur_process->id,getClk());
+                    kill(cur_process->pid,SIGCONT);                
+
+                }
+                
+                p_running=true;
+                cur_process->status=1;
             }
         }
-    }
+
+        // if(PQisEmpty(&pQHead)==false&&p_running==false){
+        //     // advance the prointer to get the first unfinished process
+        //     cur_node=cur_node->next;
+        //     struct pnode*fir_ptr=cur_node;
+        //     if(cur_node==NULL)
+        //         cur_node=pQHead;
+        //     int rewind=0;
+        //     while(cur_node->processobj.status==-1){
+        //         cur_node=cur_node->next;
+        //         if(cur_node==NULL){
+        //             cur_node=pQHead;
+        //         }
+        //         else if(cur_node==fir_ptr){
+        //             rewind=1;
+        //             break;
+        //         }
+        //     }
+        //     if(cur_node!=NULL)
+        //     *cur_process=cur_node->processobj;
+
+        // }
+        // if(PQisEmpty(&pQHead)==false&&p_running==false){
+        //     printf("Process %d will run ,clk %d\n",cur_process->id,getClk());
+        //     //fork a process and runs it giving it's remaining time as an argument
+        //     if(cur_process->pid == -1){
+        //         cur_process->pid=fork();
+        //         int cur_pid=cur_process->pid;
+        //         if(cur_pid==0){
+        //             sprintf(number_str,"%d",cur_process->remainingTime);
+        //             char*args[]={"./process.out",number_str,NULL};
+        //             execv(args[0],args);
+        //             exit(0);
+        //         }
+        //     }
+        //     // if the process was alraedy forked but blocked 
+        //     // then we should awake it.
+        //     else{
+        //         printf("\nProcess %d Resume at clk %d\n",cur_process->id,getClk());
+        //         kill(cur_process->pid,SIGCONT);                
+
+        //     }
+                
+        //     p_running=true;
+        //     cur_process->status=1;
+                    
+
+        // }
+        // // if there is a running process we should decrease it's remaining time by 1
+        // if(p_running){
+        //     printf("process %d is running,clk %d\n",cur_process->id,getClk());
+        //     if(cur_process!=NULL){
+        //         cur_process->remainingTime-=1;
+        //         // if process has finished execution we should kill it
+        //         // and set it's status to finished
+        //         // and reset the quantum
+        //         if(HPF_isFinished==true){ // process finished execution
+        //             p_running = false;
+        //             HPF_isFinished=false;
+        //             cur_process->status=-1;
+        //             continue;
+        //         }
+        //     }
+        // }
+        
         if(PQisEmpty(&pQHead)==true&&rec==-1){
             printf("SCH::EXITING\n");
             exit(0);
         }
+    }
+    printf("EXITING\n");
+    exit(0);
+    destroyClk(true);
+}
 
 
+// void SRTN(){
+//     struct msgProcess *arr=(struct msgProcess*)malloc(num_proc*sizeof(struct msgProcess));
+//     //struct Queue*RR_Queue=Queue_Constructor();
+
+//     int tempQuantum=quantum;
+//     struct process*cur_process=NULL;
+//     //struct Node*cur_node;
+//     struct pnode * pQHead=NULL;
+//     struct pnode * cur_node=NULL;
+//     int y=0;
+//     int rec=1;
+//     int idx=0;
+//     signal(SIGUSR1,HPFSIGCHLDHandler);
+//     int oldtime=getClk();
+//     bool firsttime=true;
+//     while(1){
+//         // Recieve a message first from the process_generator telling it how many processes will arrive in this clk cycle
+//         // it will recieve -1 if there is no more processes to arrive later.
+//         struct msgbuff m;
+//         int rec_val=msgrcv(PG2S_msqid , &m, sizeof(m.val),0, !IPC_NOWAIT);
+//         int temp_val=m.val;
+//         if(rec!=-1)rec=m.val;
+//         // Thie while loop is responsible for recieving the processes'data.
+//         while(temp_val!=0 && temp_val!=-1){
+//             rec_val=msgrcv(PG2S_msqid , &arr[idx], sizeof(arr[idx].p),0, !IPC_NOWAIT);
+
+//             if(rec_val!=-1){  
+//                     printf("SCH::clk %d process id %d,arrival %d,runTime %d,priority %d,memsize %d,pid %ld\n",getClk()
+//                                     ,arr[idx].p.id,arr[idx].p.arrivalTime,arr[idx].p.runTime,arr[idx].p.priority,arr[idx].p.memSize,arr[idx].p.pid);
+//             }
+//             // Enqueue the recieved processes in RR_Queue.
+//             if(PQisEmpty(&pQHead)){
+//                 pQHead = newNode(arr[idx].p,arr[idx].p.remainingTime);
+//             }else{
+//                 push(&pQHead,arr[idx].p,arr[idx].p.remainingTime);
+//             }
+//             //enqueue(RR_Queue,&arr[idx].p);
+//             idx++;
+//             // if this process is the first arrived one , we should place it at headptr.
+//             if(y==0){
+//                 cur_node=pQHead;
+//                 cur_process=&cur_node->processobj;
+//             }
+//             y+=1;
+//             temp_val-=1;
+
+//         }
+
+//         printf("finished receiving.... \n");
+//         if(pQHead!=NULL){
+//             if(cur_process != NULL){
+//                 printf("enter... \n");
+//                 cur_process->remainingTime=cur_process->remainingTime -1;
+//                 struct process * temp;
+//                 temp = cur_process;
+//                 *cur_process = peek(&pQHead);
+//                 printf("dbgg1... \n");
+//                 if(cur_process!=temp||firsttime==true){
+//                     printf("dbgg2... \n");
+//                     firsttime=false;
+//                     kill(temp->pid,SIGSTOP);
+//                     printf("Process %d will run ,clk %d\n",cur_process->id,getClk());
+//                     //fork a process and runs it giving it's remaining time as an argument
+//                     if(cur_process->pid == -1){
+//                         cur_process->pid=fork();
+//                         int cur_pid=cur_process->pid;
+//                         if(cur_pid==0){
+//                             sprintf(number_str,"%d",cur_process->remainingTime);
+//                             char*args[]={"./process.out",number_str};
+//                             execv(args[0],args);
+//                             exit(0);
+//                         }
+//                     }
+//                     // if the process was alraedy forked but blocked 
+//                     // then we should awake it.
+//                     else{
+//                         printf("\nProcess %d Resume at clk %d\n",cur_process->id,getClk());
+//                         kill(cur_process->pid,SIGCONT);                
+
+//                     }
+                        
+//                     p_running=true;
+//                     cur_process->status=1;
+                
+//             }
+                
+//                 //printf("current process = %d , status = %d\n",cur_process->id,cur_process->status);
+    
+                
+//                 if (cur_process != NULL && HPF_isFinished==true){
+//                     cur_process->status = -1;
+//                     pop(&pQHead);
+//                     HPF_isFinished=false;
+//                     *cur_process = peek(&pQHead);
+//                 }
+//             }
+//         }
+//     }
+//         if(PQisEmpty(&pQHead)==true&&rec==-1){
+//             printf("SCH::EXITING\n");
+//             exit(0);
+//         }
+
+
+// }
+
+void HPFSIGUSR1Handler(int signum){
+    printf("Termination signal received  .......................................\n");
+    HPF_isFinished=true;
+    signal(SIGUSR1,HPFSIGUSR1Handler);
 }

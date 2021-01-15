@@ -236,16 +236,16 @@ void HPF(){
             }
             // Enqueue the recieved processes in RR_Queue.
             if(PQisEmpty(&pQHead)){
-                pQHead = newNode(arr[idx].p,arr[idx].p.priority);
+                pQHead = newNode(&arr[idx].p,arr[idx].p.priority);
             }else{
-                push(&pQHead,arr[idx].p,arr[idx].p.priority);
+                push(&pQHead,&arr[idx].p,arr[idx].p.priority);
             }
             //enqueue(RR_Queue,&arr[idx].p);
             idx++;
             // if this process is the first arrived one , we should place it at headptr.
             if(y==0){
                 cur_node=pQHead;
-                cur_process=&cur_node->processobj;
+                cur_process=cur_node->processobj;
             }
             y+=1;
             temp_val-=1;
@@ -254,14 +254,21 @@ void HPF(){
 
        
         if(pQHead!=NULL){
+            if (cur_process != NULL && HPF_isFinished==true){
+                printf("Terminating the process........\n");
+                cur_process->status = -1;
+                pop(&pQHead);
+                HPF_isFinished=false;
+                cur_process = peek(&pQHead);
+            }
             if(cur_process == NULL){
-                *cur_process = peek(&pQHead);
+                cur_process = peek(&pQHead);
             }
             printf("current process = %d , status = %d\n",cur_process->id,cur_process->status);
             if(cur_process!=NULL && cur_process->status==0){
                 printf("creating a process........\n");
                 printf("Process %d will run ,clk %d\n",cur_process->id,getClk());
-                *cur_process = peek(&pQHead);
+                cur_process = peek(&pQHead);
                 if(cur_process->pid == -1){
                 cur_process->pid=fork();
                 int cur_pid=cur_process->pid;
@@ -275,12 +282,12 @@ void HPF(){
                 p_running=true;
                 cur_process->status=1;
             }
-            if (cur_process != NULL && HPF_isFinished==true){
-                cur_process->status = -1;
-                pop(&pQHead);
-                HPF_isFinished=false;
-                *cur_process = peek(&pQHead);
-            }
+            // if (cur_process != NULL && HPF_isFinished==true){
+            //     cur_process->status = -1;
+            //     pop(&pQHead);
+            //     HPF_isFinished=false;
+            //     *cur_process = peek(&pQHead);
+            // }
         }
         if(PQisEmpty(&pQHead)==true&&rec==-1){
             printf("SCH::EXITING\n");
@@ -325,25 +332,27 @@ void SRTN(){
             }
             // Enqueue the recieved processes in RR_Queue.
             if(PQisEmpty(&pQHead)){
-                pQHead = newNode(arr[idx].p,arr[idx].p.remainingTime);
+                pQHead = newNode(&arr[idx].p,arr[idx].p.remainingTime);
             }else{
-                push(&pQHead,arr[idx].p,arr[idx].p.remainingTime);
+                push(&pQHead,&arr[idx].p,arr[idx].p.remainingTime);
             }
             //enqueue(RR_Queue,&arr[idx].p);
             idx++;
             // if this process is the first arrived one , we should place it at headptr.
             if(y==0){
                 cur_node=pQHead;
-                cur_process=&cur_node->processobj;
+                cur_process=cur_node->processobj;
+                //cur_process->remainingTime++;
             }
             y+=1;
             temp_val-=1;
 
         }
-        if(cur_process!=NULL){
-            cur_process->remainingTime-=1;
-            printf("remainingtime=%d......\n",cur_process->remainingTime);
-        }
+        // if(cur_process!=NULL){
+        //     cur_process->remainingTime=cur_process->remainingTime-1;
+        //     printf("remainingtime=%d......\n",cur_process->remainingTime);
+        // }
+        
         if (cur_process != NULL && HPF_isFinished==true){
                 printf("poping terminated process...\n");
                 cur_process->status = -1;
@@ -353,26 +362,26 @@ void SRTN(){
                     printf("no process available...\n");
                     cur_process=NULL;
                 }else{
-                    *cur_process = peek(&pQHead);
+                    cur_process = peek(&pQHead);
                 }
                 if(cur_process==NULL){
                     printf("no process available...\n");
                 }
                 p_running=false;
                 if(cur_process!=NULL){
-                    cur_process->remainingTime++;
+                    //cur_process->remainingTime++;
                 }
         }
         if(cur_process==NULL && pQHead!=NULL){
             printf("Here.......................\n");
             cur_node=pQHead;
-            cur_process=&cur_node->processobj;
+            cur_process=cur_node->processobj;
             printf("Here.......................2\n");
         }
         if((pQHead!=NULL || p_running==false)&&cur_process!=NULL){
             printf("old process pid = %ld...remaining time = %d....\n",cur_process->pid,cur_process->remainingTime);
             struct process* temp = cur_process;
-            cur_process = &pQHead->processobj;
+            cur_process = pQHead->processobj;
             printf("new process pid = %ld...remaining time = %d....\n",cur_process->pid,cur_process->remainingTime);
             
             if(temp->pid!=cur_process->pid || p_running == false){
@@ -404,6 +413,11 @@ void SRTN(){
                 p_running=true;
                 cur_process->status=1;
             }
+        }
+        if(cur_process!=NULL){
+            cur_process->remainingTime=cur_process->remainingTime-1;
+            pQHead->priority--;
+            printf("remainingtime=%d......\n",cur_process->remainingTime);
         }
 
         // if(PQisEmpty(&pQHead)==false&&p_running==false){

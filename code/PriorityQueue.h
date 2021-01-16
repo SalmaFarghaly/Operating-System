@@ -1,16 +1,18 @@
+
+
 #include "headers.h"
 
-typedef struct node { 
-    struct process processobj; 
+typedef struct pnode { 
+    struct process* processobj; 
   
     // Lower values indicate higher priority 
     int priority; 
   
-    struct node* next; 
+    struct pnode* next; 
   
 } Node; 
   
-Node* newNode( struct process proc , int p) 
+Node* newNode( struct process* proc , int p) 
 { 
     Node* temp = (Node*)malloc(sizeof(Node)); 
     temp->processobj = proc; 
@@ -21,7 +23,7 @@ Node* newNode( struct process proc , int p)
 } 
   
 // Return the value at head 
-struct process peek(Node** head) 
+struct process* peek(Node** head) 
 { 
     return (*head)->processobj; 
 } 
@@ -36,7 +38,7 @@ void pop(Node** head)
 } 
   
 // Function to push according to priority 
-void push(Node** head, struct process proc , int p) 
+void push(Node** head, struct process* proc , int p) 
 { 
     Node* start = (*head); 
   
@@ -46,6 +48,7 @@ void push(Node** head, struct process proc , int p)
     // Special Case: The head of list has lesser 
     // priority than new node. So insert new 
     // node before head node and change head node. 
+    printf("Head prio= %d , new pri = %d......\n",(*head)->priority,p);
     if ((*head)->priority > p) { 
   
         // Insert New Node before head 
@@ -69,7 +72,7 @@ void push(Node** head, struct process proc , int p)
 } 
   
 // Function to check is list is empty 
-int isEmpty(Node** head) 
+int PQisEmpty(Node** head) 
 { 
     return (*head) == NULL; 
 }

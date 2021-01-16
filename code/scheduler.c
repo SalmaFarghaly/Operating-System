@@ -1,5 +1,6 @@
 // #include "headers.h"
 #include "Queue.h"
+#include "PriorityQueue.h"
 #include "sys/msg.h"
 #include "stdio.h"
 #include <math.h>
@@ -25,6 +26,8 @@ long sch=0;
 void RoundRobin();
 bool RR_allFinished(struct Queue*q);
 struct process* findProcessWithPid(int pid);
+//================Functions used by HPF 
+void HPF();
 
 //=============logs=======
 FILE*fp;
@@ -38,11 +41,7 @@ int main(int argc, char * argv[]){
 
     signal(SIGUSR1,myhandler);//handling the exit signal from the child process.
     initClk();
-
-
-
     key_t PG2S_key_id_2;
-
     PG2S_key_id_2=ftok("keyfile",2);
     M_PG2S_msqid = msgget(PG2S_key_id_2, IPC_CREAT | 0644);
     if (M_PG2S_msqid== -1){
@@ -65,7 +64,7 @@ int main(int argc, char * argv[]){
     if(message.algo==1){
         RoundRobin();
     }
-    if(message.algo==2){
+    if(message.algo==3){
         HPF();
     }
   
@@ -109,18 +108,14 @@ bool RR_allFinished(struct Queue*q){
 void myhandler(int signum){
 
     if(signum==SIGUSR1){
-
         int stat_loc=0;
         int pid=wait(&stat_loc);
         if(!stat_loc&0x00FF){
-            
-
                 handler=1;
-                
-
         }
 
     }
+    signal(SIGUSR1,myhandler);
    
 }
 

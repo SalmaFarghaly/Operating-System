@@ -26,7 +26,7 @@ int main(int argc, char * argv[])
     int clk = 0;
     //Create shared memory for one integer variable 4 bytes
     shmid = shmget(SHKEY, 4, IPC_CREAT | 0644);
-    printf("CLKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK %d\n",shmid);
+    // printf("CLKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK %d\n",shmid);
     if ((long)shmid == -1)
     {
         perror("Error in creating shm!");

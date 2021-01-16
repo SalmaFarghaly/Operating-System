@@ -86,11 +86,13 @@ void Queue_Destructor(struct Queue* q){
     }
     free(q);
 }
-
-// void print_Queue(struct Queue*q){
-//     struct Node*cur_ptr=q->headPtr;
-//     while(cur_ptr!=NULL){
-//         printf(cur_ptr->processObj);
-//         cur_ptr=cur_ptr->nextNodePtr;
-//     }
-// }
+void print_Queue(struct Queue*q){
+    // printf("CAAAAAAAAAAAAAAAAAMEEEEEE\n");
+    struct Node*cur_ptr=q->headPtr;
+    // printf("CAAAAAAAAAAAAAAAAAMEEEEEE\n");
+    while(cur_ptr!=NULL){
+        printf("%d ",cur_ptr->processObj->id);
+        cur_ptr=cur_ptr->nextNodePtr;
+    }
+    printf("\n");
+}

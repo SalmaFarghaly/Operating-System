@@ -19,16 +19,16 @@ typedef short bool;
 
 struct msgbuff
 {
-    long mtype;
+    long int mtype;
     int val;
 };
 
 struct algoMsgBuff 
 {
+    long int mtype;
     int algo;
     int quantum;
     int num_proc;
-    long mtype;
 };
 // enum status{
 
@@ -44,11 +44,13 @@ struct process
     int priority;
     int remainingTime;
     int status; //1 Running 0 waiting -1 finished
+    int wait_time;
+    int lstfinish_time;
 
 
 };
 struct msgProcess{
-    long mtype;
+    long int mtype;
     struct process p;
 
 };

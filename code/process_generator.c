@@ -16,6 +16,7 @@
 int clk_pid;       // id of clock process
 int sch_pid;       // id of scheduler process
 int PG2S_msqid;    // id of message queue between Scheduler and Process generator.
+int M_PG2S_msqid;
 char myname[19]="Process Generator: ";
 int  proc_cnt=0;  // number of processes
 int cur_clk=-1;
@@ -32,7 +33,7 @@ int main(int argc, char * argv[])
 {
     signal(SIGINT, clearResources);
     // 1. Read the input files.
-    char*file_name="testcases/processes1.txt";
+    char*file_name="testcases/processes3.txt";
     getProcessesCnt(file_name);
     struct process*processes=(struct process*)malloc(proc_cnt*sizeof(struct process));
     readProcessesData(file_name,processes);
@@ -55,12 +56,12 @@ int main(int argc, char * argv[])
     printf("2.SRTN \n");
     printf("3.Nonpreemptive HPF \n");
     printf("4.Quit \n\n");
-    printf("Enter your choice : ");
+    printf("Enter your choice : \n");
 
     scanf("%d", &choice);
     switch (choice){
         case 1:
-            printf("\nEnter the quantum: ");
+            printf("\nEnter the quantum: \n");
             scanf("%d", &quantum);
             break;
         case 4:
@@ -74,7 +75,7 @@ int main(int argc, char * argv[])
     clk_pid=fork();
     // This will be executed by the clk child process
     if(clk_pid==0){
-        printf("I am the child my pid : %d\n",getpid());
+        // printf("I am the child my pid : %d\n",getpid());
         char*args[]={"./clk.out",NULL};
         execvp(args[0],args);
         exit(0);
@@ -89,23 +90,32 @@ int main(int argc, char * argv[])
             initClk();
             sch_pid=fork();
             if (sch_pid==0){
+                // printf("PG::FOrking sch\n");
                 char*args[]={"./scheduler.out",NULL};
                 execv(args[0],args);
                 exit(0);
             }
             else{
                 key_t PG2S_key_id;
+                key_t PG2S_key_id_2;
             
 
                 // Create a message Queue to send info to scheduler.
                 PG2S_key_id= ftok("keyfile", 1);
+                PG2S_key_id_2=ftok("keyfile",2);
                 PG2S_msqid = msgget(PG2S_key_id, IPC_CREAT | 0644);
                 if (PG2S_msqid == -1){
-                    printf("%s",myname);
+                    printf("%s\n",myname);
                     perror("Error in create message queue to Scheduler\n");
                     exit(-1);
                 }
-                printf("message Queue:%d\n",PG2S_msqid);
+                M_PG2S_msqid = msgget(PG2S_key_id_2, IPC_CREAT | 0644);
+                if (M_PG2S_msqid== -1){
+                    printf("%s\n",myname);
+                    perror("Error in create message queue to Scheduler\n");
+                    exit(-1);
+                }
+                // printf("message Queue:%d\n",PG2S_msqid);
 
 
                 // Send which Algo to run as a message through queue to the scheduler
@@ -126,7 +136,7 @@ int main(int argc, char * argv[])
                 while(1){
                     cur_clk= getClk();
 
-                    if(cur_clk!=prev_clk&&cur_clk!=0){
+                    if(cur_clk!=prev_clk && cur_clk!=0){
                         // send the count of processes that their arrival time =clk;
                         struct msgbuff m;
                         m.val=0;
@@ -141,7 +151,7 @@ int main(int argc, char * argv[])
                         }
                         m.mtype=sch_pid;
                         printf("PG:: m.val %d , clk %d\n",m.val,getClk());
-                        int send_val = msgsnd(PG2S_msqid, &m, sizeof(m.val), !IPC_NOWAIT);
+                        int send_val = msgsnd(M_PG2S_msqid, &m, sizeof(m.val), !IPC_NOWAIT);
                         if (send_val == -1)
                             perror("Process Generator: Errror in sending process  to Scheduler");
                         // loop over the processes and send the process whose arrival time
@@ -152,27 +162,31 @@ int main(int argc, char * argv[])
                                 p.p=processes[k];
                                 p.mtype=sch_pid;
                                 printf("\nPG :: The current time is %d\n",cur_clk);
+                                printf("PG::clk %d process id %d,arrival %d,runTime %d,priority %d,memsize %d,pid %ld\n",getClk()
+                                    ,p.p.id,p.p.arrivalTime,p.p.runTime,p.p.priority,p.p.memSize,p.p.pid);
                                 send_val = msgsnd(PG2S_msqid, &p, sizeof(p.p), !IPC_NOWAIT);
                                 if (send_val == -1)
                                     perror("Process Generator: Errror in sending process  to Scheduler");
                                 sentProcesses+=1;
                             }
                         }
-                        printf("sentProcesssss %d,proc_Cnt %d clk %d\n",sentProcesses,proc_cnt,getClk());
+                        // printf("sentProcesssss %d,proc_Cnt %d clk %d\n",sentProcesses,proc_cnt,getClk());
                         prev_clk=cur_clk;
+
+                        // Check if scheduler has finished then the process generator should terminate and clear the resources.
+                        int status;
+                        pid_t result=waitpid(sch_pid,&status,WNOHANG);
+                        if(result!=0 && result!=-1){
+                            printf("SCHEDULER FINISHEDDDDDD %d result %d\n",sch_pid,result);
+                            destroyClk(true);
+                            clearResources();
+                            msgctl(PG2S_msqid, IPC_RMID, (struct msqid_ds *)0);
+                            msgctl(M_PG2S_msqid, IPC_RMID, (struct msqid_ds *)0);
+                            break;
+                        }
                         
 
-
-                    }
-                    // Check if scheduler has finished then the process generator should terminate and clear the resources.
-                    int status;
-                    pid_t result=waitpid(sch_pid,&status,WNOHANG);
-                    if(result!=0 && result!=-1){
-                        destroyClk(true);
-                        clearResources();
-                        msgctl(PG2S_msqid, IPC_RMID, (struct msqid_ds *)0);
-                        break;
-                    }
+                    }////////
 
 
                 }
@@ -201,7 +215,7 @@ void readProcessesData(char*file_name,struct process*processes){
     }
     int i=-1;
     while (fgets(str, MAXCHAR, fp) != NULL){
-        printf("%s", str);
+        // printf("%s", str);
         if(i!=-1) // Don't split tokens for first line in the file
             splitTokens(str,&processes[i]); // split string into tokens 1st Token ==> #id ,2ndToken==>arrivalTime and etc.
         i++;
@@ -214,7 +228,7 @@ void readProcessesData(char*file_name,struct process*processes){
 void splitTokens(char*str,struct process*p){
 
   char * pch;
-  printf ("Splitting string into tokens:\n");
+//   printf ("Splitting string into tokens:\n");
   pch = strtok (str," ,.-");
   int j=0;
   while (pch != NULL)
@@ -237,6 +251,8 @@ void splitTokens(char*str,struct process*p){
   }
   p->pid=-1;
   p->status=0;
+  p->wait_time=0;
+  p->lstfinish_time=0;
 }
 
 // This function counts the Number of processes that are read from the processes text file. 

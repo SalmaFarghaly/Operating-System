@@ -39,21 +39,16 @@ int main(int argc, char * argv[]){
     signal(SIGUSR1,myhandler);//handling the exit signal from the child process.
     initClk();
 
-    fp = fopen("logs/Round_Robin/scheduler2.log", "w");
 
 
-    printf("\nSechedular: I have just begun clkk %d\n",getClk());
-    fprintf(fp, "#At time\tx\tprocess\ty\tstate\tarr\tw\ttotal\tz\tremain\ty\twait\t\n");
-    fflush(fp);
+    key_t PG2S_key_id_2;
 
-                key_t PG2S_key_id_2;
-            
-                PG2S_key_id_2=ftok("keyfile",2);
-                M_PG2S_msqid = msgget(PG2S_key_id_2, IPC_CREAT | 0644);
-                if (M_PG2S_msqid== -1){
-                    perror("Error in create message queue to Scheduler\n");
-                    exit(-1);
-                }
+    PG2S_key_id_2=ftok("keyfile",2);
+    M_PG2S_msqid = msgget(PG2S_key_id_2, IPC_CREAT | 0644);
+    if (M_PG2S_msqid== -1){
+        perror("Error in create message queue to Scheduler\n");
+        exit(-1);
+    }
     
     key_t PG2S_key_id;
             
@@ -69,6 +64,9 @@ int main(int argc, char * argv[]){
     num_proc=message.num_proc;
     if(message.algo==1){
         RoundRobin();
+    }
+    if(message.algo==2){
+        HPF();
     }
   
 
@@ -126,6 +124,154 @@ void myhandler(int signum){
    
 }
 
+void HPF(){
+    fp = fopen("logs/HPF/scheduler2.log", "w");
+    printf("\nSechedular: I have just begun clkk %d\n",getClk());
+    fprintf(fp, "#At time\tx\tprocess\ty\tstate\tarr\tw\ttotal\tz\tremain\ty\twait\t\n");
+    fflush(fp);
+    fclose(fp);
+    struct msgProcess *arr=(struct msgProcess*)malloc(num_proc*sizeof(struct msgProcess));
+    struct process*cur_process=NULL;
+    //struct Node*cur_node;
+    struct pnode * pQHead=NULL;
+    struct pnode * cur_node=NULL;
+    int y=0;
+    int rec=1;
+    int idx=0;
+    int sch=getpid();
+    signal(SIGUSR1,myhandler);
+    printf("my pid is %d....\n",getpid());
+    while(1){
+        printf("SCH::Clkkk Cycle %d\n",getClk());
+        if(cur_process!=NULL){
+            if(cur_process->status==1){
+                cur_process->remainingTime-=1;
+                if(cur_process->remainingTime>0){
+                }
+                else{
+                    if(handler==0){
+                        sleep(5);
+                        printf("clk :: %d process %d finished \n",getClk(),cur_process->id);
+                        cur_process->status=-1;
+                    }
+
+                }
+            }
+            if(handler==1){
+                float num=(float)getClk()-cur_process->arrivalTime;
+                float dem=(float)cur_process->runTime;
+
+                float result=num/dem;
+                float WTA=ceilf(result*100)/100;
+                total_wait+=cur_process->wait_time;
+                total_TA+=getClk()-cur_process->arrivalTime;
+                fp = fopen("logs/HPF/scheduler2.log", "a");
+                fprintf(fp, "At time\t%d\tprocess\t%d\tfinished\tarr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\tTA\t%d\tWTA\t%.2f\n",
+                getClk(),cur_process->id
+                ,cur_process->arrivalTime,cur_process->runTime,cur_process->remainingTime,
+                cur_process->wait_time,getClk()-(cur_process->arrivalTime),WTA);
+                    fclose(fp);
+                cur_process->status=-1;
+                handler=0;
+            }
+        }
+
+        // Recieve a message first from the process_generator telling it how many processes will arrive in this clk cycle
+        // it will recieve -1 if there is no more processes to arrive later.
+        struct msgbuff m;
+        int r=msgrcv(M_PG2S_msqid , &m, sizeof(m.val),sch, !IPC_NOWAIT);
+        if(r==-1){
+            printf("MMMMMMMMMMMMSCH :: Error in receiving mssggggggggggggggg %d\n",getClk());
+        }
+        int temp_val=m.val;
+        rec=m.val;
+        // Thie while loop is responsible for recieving the processes'data.
+        printf("SCHHHHH:: m.val %d , clk %d\n",m.val,getClk());
+        while(temp_val!=0 && temp_val!=-1){
+            printf("IN LOOP :: SCHHHHH:: m.val %d , clk %d\n",m.val,getClk());
+            int rec_val=msgrcv(PG2S_msqid , &arr[idx], sizeof(arr[idx].p),sch, !IPC_NOWAIT);
+            if(rec_val!=-1){  
+                    printf("SCH::clk %d process id %d,arrival %d,runTime %d,priority %d,memsize %d,pid %ld\n",getClk()
+                                    ,arr[idx].p.id,arr[idx].p.arrivalTime,arr[idx].p.runTime,arr[idx].p.priority,arr[idx].p.memSize,arr[idx].p.pid);
+
+
+                    printf("\nENQUEUEU:::SCH::clk %d process id %d,arrival %d,runTime %d,priority %d,memsize %d,pid %ld\n",getClk()
+                                            ,arr[idx].p.id,arr[idx].p.arrivalTime,arr[idx].p.runTime,arr[idx].p.priority,arr[idx].p.memSize,arr[idx].p.pid);
+                  
+                    if(PQisEmpty(&pQHead)){
+                        pQHead=newNode(&arr[idx].p,arr[idx].p.priority);
+                    }
+                    else{
+                        push(&pQHead,&arr[idx].p,arr[idx].p.priority);
+                    }
+                    idx++;
+
+                    temp_val-=1;
+            }
+            else{
+                int clk=getClk();
+                printf("SCH :: Error in receiving mssggggggggggggggg %d\n",clk);
+            }
+
+        }
+
+
+        //========= At beginning of a clk cycle======///
+        // printf("BLOCKKKKKKK 11111\n");
+
+        if(PQisEmpty(&pQHead)==true&&rec==-1){
+            if(cur_process->status!=1){
+            printf("SCH::EXITING\n");
+            return;
+            }
+            
+        }
+        //if there is process that should be stopped;
+        //-1 cur has finished or number pid to stop it
+        int temp=0;
+        if(cur_process==NULL && PQisEmpty(&pQHead)==false){
+            cur_process=peek(&pQHead);
+            pop(&pQHead);
+            temp=1;
+        }
+
+        //  printf("BLOCKKKKKKK 22222\n");
+
+        if(cur_process!=NULL){
+            // printf("BLOCKKKKKKK 333333\n");
+            if(cur_process->status!=1){ // stopped 0 finished -1 not started yet 0
+            if(temp!=1){
+                // printf("BLOCKKKKKKK 55555555555555\n");
+                cur_process=peek(&pQHead);
+                pop(&pQHead);
+            }
+            printf("clk :: %d process %d started \n",getClk(),cur_process->id);
+            cur_process->wait_time=getClk()-cur_process->arrivalTime;
+            printf("\nSCH::Process %d starts at clk %d\n",cur_process->id,getClk());
+            fp = fopen("logs/HPF/scheduler2.log", "a");
+            fprintf(fp, "At time\t%d\tprocess\t%d\tstarted\tarr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n",getClk(),cur_process->id
+            ,cur_process->arrivalTime,cur_process->runTime,cur_process->remainingTime,cur_process->wait_time);
+            fflush(fp);
+            fclose(fp);
+                if(cur_process->pid==-1){
+                    cur_process->pid=fork();
+                    int cur_pid=cur_process->pid;
+                    if(cur_pid==0){
+                        sprintf(number_str,"%d",cur_process->remainingTime);
+                        char*args[]={"./process.out",number_str,NULL};
+                        execv(args[0],args);
+                        exit(0);
+                    }
+                    cur_process->status=1;
+                }
+            }
+            // printf("BLOCKKKKKKK 555555\n");
+        }
+        printf("CLKKKK CYCLEEEEEEE FINISHEDDDDDDDD !!!!!!!\n");
+    }
+
+}
+
 void RoundRobin(){
 
     
@@ -138,6 +284,10 @@ void RoundRobin(){
     int y=0;
     int rec=1;
     int idx=0;
+    fp = fopen("logs/Round_Robin/scheduler2.log", "w");
+    printf("\nSechedular: I have just begun clkk %d\n",getClk());
+    fprintf(fp, "#At time\tx\tprocess\ty\tstate\tarr\tw\ttotal\tz\tremain\ty\twait\t\n");
+    fflush(fp);
 
     while(1){
 

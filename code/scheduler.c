@@ -36,6 +36,463 @@ FILE*fp;
 void myhandler();
 
 
+
+//================Utilities for memory alloaction ====================////
+// Initializing Memory 
+bool A256[4]={0,0,0,0};
+bool A128[8]={0,0,0,0,0,0,0,0};
+bool A64[16]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+bool A32[32]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+bool A16[64]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+bool A8[128]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+bool A4[256]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+bool A2[512]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+bool A1[1024]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+bool Allocation(struct process*p){
+    int ProcessSize = p->memSize;
+    if(ProcessSize<=256 && ProcessSize>128){ // Allocate in a 256 block
+        for (int i =0; i<3; i++){
+            if (A256[i]==0){ // then this block is free
+                A256[i]=1;
+                p->startAlloc=i;
+                //Allocating all other memorry arrays
+                for(int j=i*2;j<i*2+2;j++){
+                    A128[j]=1;
+                }
+                for(int q=i*4;q<i*4+4;q++){
+                    A64[q]=1;
+                }
+                for(int w=i*8;w<i*8+8;w++){
+                    A32[w]=1;
+                }
+                for(int y=i*16;y<i*16+16;y++){
+                    A16[y]=1;
+                }
+                for(int f=i*32;f<i*32+32;f++){
+                    A8[f]=1;
+                }
+                for(int r=i*64;r<i*64+64;r++){
+                    A4[r]=1;
+                }
+                for(int e=i*128;e<i*128+128;e++){
+                    A2[e]=1;
+                }
+                for(int t=i*256;t<i*256+256;t++){
+                    A1[t]=1;
+                }
+                return true;
+            }
+        }
+    }
+    // process size smaller than 128
+    if(ProcessSize>64 && ProcessSize<=128){
+        for (int i =0; i<8; i++){
+            if (A128[i]==0){ // then this block is free
+                A128[i]=1;
+                p->startAlloc=i;
+                //Allocating all other memorry arrays
+                for(int j=i*2;j<i*2+2;j++){
+                    A64[j]=1;
+                }
+                for(int q=i*4;q<i*4+4;q++){
+                    A32[q]=1;
+                }
+                for(int w=i*8;w<i*8+8;w++){
+                    A16[w]=1;
+                }
+                for(int y=i*16;y<i*16+16;y++){
+                    A8[y]=1;
+                }
+                for(int f=i*32;f<i*32+32;f++){
+                    A4[f]=1;
+                }
+                for(int r=i*64;r<i*64+64;r++){
+                    A2[r]=1;
+                }
+                for(int e=i*128;e<i*128+128;e++){
+                    A1[e]=1;
+                }
+                
+                return true;
+            }
+        }
+    }
+    // process size smaller than 64
+    if(ProcessSize>32 && ProcessSize<=64){
+        for (int i =0; i<16; i++){
+            if (A64[i]==0){ // then this block is free
+                A64[i]=1;
+                p->startAlloc=i;
+                //Allocating all other memorry arrays
+                for(int j=i*2;j<i*2+2;j++){
+                    A32[j]=1;
+                }
+                for(int q=i*4;q<i*4+4;q++){
+                    A16[q]=1;
+                }
+                for(int w=i*8;w<i*8+8;w++){
+                    A8[w]=1;
+                }
+                for(int y=i*16;y<i*16+16;y++){
+                    A4[y]=1;
+                }
+                for(int f=i*32;f<i*32+32;f++){
+                    A2[f]=1;
+                }
+                for(int r=i*64;r<i*64+64;r++){
+                    A1[r]=1;
+                }
+              
+                
+                return true;
+            }
+        }
+    }
+    // process size smaller than 32 and bigger than 16
+    if(ProcessSize>16 && ProcessSize<=32){
+        for (int i =0; i<32; i++){
+            if (A32[i]==0){ // then this block is free
+                A32[i]=1;
+                p->startAlloc=i;
+                //Allocating all other memorry arrays
+                for(int j=i*2;j<i*2+2;j++){
+                    A16[j]=1;
+                }
+                for(int q=i*4;q<i*4+4;q++){
+                    A8[q]=1;
+                }
+                for(int w=i*8;w<i*8+8;w++){
+                    A4[w]=1;
+                }
+                for(int y=i*16;y<i*16+16;y++){
+                    A2[y]=1;
+                }
+                for(int f=i*32;f<i*32+32;f++){
+                    A1[f]=1;
+                }
+              
+                return true;
+            }
+        }
+    }
+        // process size smaller than 16 and bigger than 8
+    if(ProcessSize>8 && ProcessSize<=16){
+        for (int i =0; i<64; i++){
+            if (A16[i]==0){ // then this block is free
+                A16[i]=1;
+                p->startAlloc=i;
+                //Allocating all other memorry arrays
+                for(int j=i*2;j<i*2+2;j++){
+                    A8[j]=1;
+                }
+                for(int q=i*4;q<i*4+4;q++){
+                    A4[q]=1;
+                }
+                for(int w=i*8;w<i*8+8;w++){
+                    A2[w]=1;
+                }
+                for(int y=i*16;y<i*16+16;y++){
+                    A1[y]=1;
+                }
+              
+                return true;
+            }
+        }
+    }
+            // process size smaller than 16 and bigger than 8
+    if(ProcessSize>4 && ProcessSize<=8){
+        for (int i =0; i<128; i++){
+            if (A8[i]==0){ // then this block is free
+                A8[i]=1;
+                p->startAlloc=i;
+                //Allocating all other memorry arrays
+                for(int j=i*2;j<i*2+2;j++){
+                    A4[j]=1;
+                }
+                for(int q=i*4;q<i*4+4;q++){
+                    A2[q]=1;
+                }
+                for(int w=i*8;w<i*8+8;w++){
+                    A1[w]=1;
+                }
+                return true;
+            }
+        }
+    }
+               // process size smaller than 16 and bigger than 8
+    if(ProcessSize>2 && ProcessSize<=4){
+        for (int i =0; i<256; i++){
+            if (A4[i]==0){ // then this block is free
+                A4[i]=1;
+                p->startAlloc=i;
+                //Allocating all other memorry arrays
+                for(int j=i*2;j<i*2+2;j++){
+                    A2[j]=1;
+                }
+                for(int q=i*4;q<i*4+4;q++){
+                    A1[q]=1;
+                }
+                return true;
+            }
+        }
+    }
+                   // process size smaller than 16 and bigger than 8
+    if(ProcessSize>1 && ProcessSize<=2){
+        for (int i =0; i<512; i++){
+            if (A2[i]==0){ // then this block is free
+                A2[i]=1;
+                p->startAlloc=i;
+                //Allocating all other memorry arrays
+                for(int j=i*2;j<i*2+2;j++){
+                    A1[j]=1;
+                }
+                return true;
+            }
+        }
+    }
+                       // process size smaller than 16 and bigger than 8
+    if(ProcessSize<=1){
+        for (int i =0; i<1024; i++){
+            if (A1[i]==0){ // then this block is free
+                A1[i]=1;
+                return true;
+                
+            }
+        }
+    }
+    for(int i =0;i<64;i++){
+        printf("hi %d--------------- A16[i] = %d\n",i,A16[i]);
+    }
+    return false;
+}
+void De_Allocation(struct process*p){
+    int ProcessSize = p->memSize;
+    if(ProcessSize<=256 && ProcessSize>128){ // Allocate in a 256 block
+        for (int i =0; i<3; i++){
+            if (p->startAlloc==i){
+                //Allocating all other memorry arrays
+                A256[i]=0;
+                
+                for(int j=i*2;j<i*2+2;j++){
+                    A128[j]=0;
+                }
+                for(int q=i*4;q<i*4+4;q++){
+                    A64[q]=0;
+                }
+                for(int w=i*8;w<i*8+8;w++){
+                    A32[w]=0;
+                }
+                for(int y=i*16;y<i*16+16;y++){
+                    A16[y]=0;
+                }
+                for(int f=i*32;f<i*32+32;f++){
+                    A8[f]=0;
+                }
+                for(int r=i*64;r<i*64+64;r++){
+                    A4[r]=0;
+                }
+                for(int e=i*128;e<i*128+128;e++){
+                    A2[e]=0;
+                }
+                for(int t=i*256;t<i*256+256;t++){
+                    A1[t]=0;
+                }
+               // return true;
+               break;
+            }
+            }
+        }
+    
+    // process size smaller than 128
+    if(ProcessSize>64 && ProcessSize<=128){
+        for (int i =0; i<8; i++){
+            if (p->startAlloc==i){
+            
+                A128[i]=0;
+                //Allocating all other memorry arrays
+                for(int j=i*2;j<i*2+2;j++){
+                    A64[j]=0;
+                }
+                for(int q=i*4;q<i*4+4;q++){
+                    A32[q]=0;
+                }
+                for(int w=i*8;w<i*8+8;w++){
+                    A16[w]=0;
+                }
+                for(int y=i*16;y<i*16+16;y++){
+                    A8[y]=0;
+                }
+                for(int f=i*32;f<i*32+32;f++){
+                    A4[f]=0;
+                }
+                for(int r=i*64;r<i*64+64;r++){
+                    A2[r]=0;
+                }
+                for(int e=i*128;e<i*128+128;e++){
+                    A1[e]=0;
+                }
+                
+                //return true;
+                break;
+            }
+        }
+    }
+    
+    // process size smaller than 64
+    if(ProcessSize>32 && ProcessSize<=64){
+        for (int i =0; i<16; i++){
+            if (p->startAlloc==i){
+                A64[i]=0;
+                //Allocating all other memorry arrays
+                for(int j=i*2;j<i*2+2;j++){
+                    A32[j]=0;
+                }
+                for(int q=i*4;q<i*4+4;q++){
+                    A16[q]=0;
+                }
+                for(int w=i*8;w<i*8+8;w++){
+                    A8[w]=0;
+                }
+                for(int y=i*16;y<i*16+16;y++){
+                    A4[y]=0;
+                }
+                for(int f=i*32;f<i*32+32;f++){
+                    A2[f]=0;
+                }
+                for(int r=i*64;r<i*64+64;r++){
+                    A1[r]=0;
+                }
+              
+                break;
+               // return true;
+            }
+        }
+    }
+    // process size smaller than 32 and bigger than 16
+    if(ProcessSize>16 && ProcessSize<=32){
+        for (int i =0; i<32; i++){
+            if (p->startAlloc==i){
+                A32[i]=0;
+                //Allocating all other memorry arrays
+                for(int j=i*2;j<i*2+2;j++){
+                    A16[j]=0;
+                }
+                for(int q=i*4;q<i*4+4;q++){
+                    A8[q]=0;
+                }
+                for(int w=i*8;w<i*8+8;w++){
+                    A4[w]=0;
+                }
+                for(int y=i*16;y<i*16+16;y++){
+                    A2[y]=0;
+                }
+                for(int f=i*32;f<i*32+32;f++){
+                    A1[f]=0;
+                }
+              break;
+              //  return true;
+            }
+        }
+    }
+        // process size smaller than 16 and bigger than 8
+    if(ProcessSize>8 && ProcessSize<=16){
+        for (int i =0; i<64; i++){
+            if (p->startAlloc==i){
+                A16[i]=0;
+                //Allocating all other memorry arrays
+                for(int j=i*2;j<i*2+2;j++){
+                    A8[j]=0;
+                }
+                for(int q=i*4;q<i*4+4;q++){
+                    A4[q]=0;
+                }
+                for(int w=i*8;w<i*8+8;w++){
+                    A2[w]=0;
+                }
+                for(int y=i*16;y<i*16+16;y++){
+                    A1[y]=0;
+                }
+               break;
+               // return true;
+            }
+        }
+    }
+            // process size smaller than 16 and bigger than 8
+    if(ProcessSize>4 && ProcessSize<=8){
+        for (int i =0; i<128; i++){
+            if (p->startAlloc==i){
+                A8[i]=0;
+                //Allocating all other memorry arrays
+                for(int j=i*2;j<i*2+2;j++){
+                    A4[j]=0;
+                }
+                for(int q=i*4;q<i*4+4;q++){
+                    A2[q]=0;
+                }
+                for(int w=i*8;w<i*8+8;w++){
+                    A1[w]=0;
+                }
+               // return true;
+               break;
+            }
+        }
+    }
+               // process size smaller than 16 and bigger than 8
+    if(ProcessSize>2 && ProcessSize<=4){
+        for (int i =0; i<256; i++){
+            if (p->startAlloc==i){
+                A4[i]=0;
+                //Allocating all other memorry arrays
+                for(int j=i*2;j<i*2+2;j++){
+                    A2[j]=0;
+                }
+                for(int q=i*4;q<i*4+4;q++){
+                    A1[q]=0;
+                }
+                //return true;
+                break;
+            }
+        }
+    }
+                   // process size smaller than 16 and bigger than 8
+    if(ProcessSize>1 && ProcessSize<=2){
+        for (int i =0; i<512; i++){
+            if (p->startAlloc==i){
+                A2[i]=0;
+                //Allocating all other memorry arrays
+                for(int j=i*2;j<i*2+2;j++){
+                    A1[j]=0;
+                }
+              //  return true;
+              break;
+            }
+        }
+    }
+                       // process size smaller than 16 and bigger than 8
+    if(ProcessSize<=1){
+        for (int i =0; i<1024; i++){
+            if (p->startAlloc==i){
+                A1[i]=0;
+                //return true;
+                break;
+                
+            }
+        }
+    }
+    for(int i =0;i<64;i++){
+        printf("hi %d--------------- A16[i] = %d\n",i,A16[i]);
+    }
+   // return false;
+}
 int main(int argc, char * argv[]){
 
 
@@ -267,12 +724,95 @@ void HPF(){
 
 }
 
+struct process* getCurProcess(struct Queue*RR_Queue,struct Queue*Wait_Q,struct process *prev_process){
+    printf("in GETTTTTT CURRRRRRRRRRRRRR clkkkkk %d\n",getClk());
+    printf("in the wait queeeeeeueeeeeee \n");
+    print_Queue(Wait_Q);
+    printf("RRRRRRR queeeeeeueeeeeee \n");
+    print_Queue(RR_Queue);
+    struct process* tempcur_process=NULL;
+    dequeue(RR_Queue);
+    // if the wait Queue is not empty listen to it
+    // and find the first one that can fit the memory
+    if(isEmpty(Wait_Q)==false){
+        struct Node*start=Wait_Q->headPtr;
+        while(Allocation(start->processObj)==false){
+            start=start->nextNodePtr;
+            //cant find any one to allocate inside wait Queue
+            // look at the ready Queue
+            if(start==NULL){
+                //dequeue a node from read queue 
+                // if it was allocated before then schedule it
+                // if not check if it can be allocated
+                while(true){
+                    struct process* R_start=dequeue(RR_Queue);
+                    if(R_start == NULL){
+                        enqueue(RR_Queue,prev_process);
+                        return prev_process;
+                    }
+                    if(R_start->startAlloc!=-1){
+                        tempcur_process=R_start;
+                        enqueue(RR_Queue,tempcur_process);
+                        return tempcur_process;
+                    }
+                    if(Allocation(R_start)==true){
+                        tempcur_process=R_start;
+                        enqueue(RR_Queue,tempcur_process);
+                        return tempcur_process;
+                    }
+                    //if the process that in Ready queue cant be allocated and wasnt 
+                    //scheduled before put it in wait queue.
+                    else{
+                        enqueue(Wait_Q,R_start);
+                    }
+                }
+            }
+            
+        }
+        // if you found a process in wait_Queue that can be allocated
+        // schedule it and remove it from wait_Queue
+        // and enqueue it to ready queue
+        enqueue(RR_Queue,tempcur_process);
+        remove_Node(Wait_Q,tempcur_process);
+        tempcur_process=start->processObj;
+        return tempcur_process;
+
+    }
+    else{
+        // if the wait queue is empty then choose the first 
+        // this block is the same as block from line 747 till line 768.
+        while(true){
+            struct process* R_start=dequeue(RR_Queue);
+            if(R_start == NULL){
+                enqueue(RR_Queue,prev_process);
+                return prev_process;
+                }
+                if(R_start->startAlloc!=-1){
+                    tempcur_process=R_start;
+                    enqueue(RR_Queue,tempcur_process);
+                    return tempcur_process;
+                }
+                if(Allocation(R_start)==true){
+                    tempcur_process=R_start;
+                    enqueue(RR_Queue,tempcur_process);
+                    return tempcur_process;
+                }
+                else{
+                    enqueue(Wait_Q,R_start);
+            }
+        }
+
+    }
+    return tempcur_process;
+
+}
+
 void RoundRobin(){
 
     
     sch=getpid();
     struct Queue*RR_Queue=Queue_Constructor();
-
+    struct Queue *Wait_Q=Queue_Constructor();
     struct process*cur_process=NULL;
     struct Node*cur_node=NULL;
     struct msgProcess *arr=(struct msgProcess*)malloc(num_proc*sizeof(struct msgProcess));
@@ -325,6 +865,7 @@ void RoundRobin(){
                 ,cur_process->arrivalTime,cur_process->runTime,cur_process->remainingTime,
                 cur_process->wait_time,getClk()-(cur_process->arrivalTime),WTA);
                     fclose(fp);
+                De_Allocation(cur_process);
                 handler=0;
             }
         }
@@ -389,12 +930,13 @@ void RoundRobin(){
 
         if(cur_process!=NULL){
             if(cur_process->status!=1){ // stopped 0 finished -1 not started yet 0
-                struct process*prev_process=dequeue(RR_Queue);
-                cur_process=peekFront(RR_Queue);
-                if(cur_process==NULL){
-                    enqueue(RR_Queue,prev_process);
-                    cur_process=prev_process;
-                }
+                struct process*prev_process=cur_process; //make previous process the current one that we should stop at this clk cycle
+                cur_process=getCurProcess(RR_Queue,Wait_Q,prev_process); // get a new process to run.
+                // cur_process=peekFront(RR_Queue);
+                // if(cur_process==NULL){
+                //     enqueue(RR_Queue,prev_process);
+                //     cur_process=prev_process;
+                // }
                 if(cur_process->pid==-1){
                     cur_process->wait_time=getClk()-cur_process->arrivalTime;
                     printf("\nSCH::Process %d starts at clk %d\n",cur_process->id,getClk());
@@ -446,7 +988,7 @@ void RoundRobin(){
                         fclose(fp);
                         printf("\nProcess %d Paused at clk %d\n",prev_process->id,getClk());
                         prev_process->lstfinish_time=getClk(); 
-                        enqueue(RR_Queue,prev_process);
+                        // enqueue(RR_Queue,prev_process);
                         }
  
                     }

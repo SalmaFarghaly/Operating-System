@@ -47,6 +47,8 @@ struct process
     int status; //1 Running 0 waiting -1 finished
     int wait_time;
     int lstfinish_time;
+    int startAlloc;
+    int WQorRQ; //1 waitQueue 0 ready Queue
 
 
 };

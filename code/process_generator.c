@@ -253,6 +253,8 @@ void splitTokens(char*str,struct process*p){
   p->status=0;
   p->wait_time=0;
   p->lstfinish_time=0;
+  p->startAlloc=-1;
+  p->WQorRQ=0;
 }
 
 // This function counts the Number of processes that are read from the processes text file. 

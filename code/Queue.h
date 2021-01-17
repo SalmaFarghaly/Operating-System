@@ -86,6 +86,25 @@ void Queue_Destructor(struct Queue* q){
     }
     free(q);
 }
+void remove_Node(struct Queue*q,struct process*p){
+    struct Node * tempNode = q->headPtr;
+    struct Node*prev=NULL;
+    if(tempNode->processObj==p){
+        q->headPtr=q->headPtr->nextNodePtr;
+        return;
+
+    }
+    while (tempNode!=NULL)
+    {
+        if(tempNode->processObj==p){
+
+            prev->nextNodePtr=tempNode->nextNodePtr;
+        }
+        prev=tempNode;
+        tempNode=tempNode->nextNodePtr;
+    }
+    
+}
 void print_Queue(struct Queue*q){
     // printf("CAAAAAAAAAAAAAAAAAMEEEEEE\n");
     struct Node*cur_ptr=q->headPtr;

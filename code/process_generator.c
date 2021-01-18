@@ -33,7 +33,7 @@ int main(int argc, char * argv[])
 {
     signal(SIGINT, clearResources);
     // 1. Read the input files.
-    char*file_name="testcases/processes3.txt";
+    char*file_name="testcases/processes5.txt";
     getProcessesCnt(file_name);
     struct process*processes=(struct process*)malloc(proc_cnt*sizeof(struct process));
     readProcessesData(file_name,processes);

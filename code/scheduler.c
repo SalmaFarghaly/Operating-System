@@ -28,6 +28,7 @@ bool RR_allFinished(struct Queue*q);
 struct process* findProcessWithPid(int pid);
 //================Functions used by HPF 
 void HPF();
+struct pnode * pQHead=NULL;
 
 //=============logs=======
 FILE*fp;
@@ -36,38 +37,292 @@ FILE*fp;
 void myhandler();
 
 ///=======================
-int allocate_A128(){
-
-}
-
+void SRTN();
+//==========Memoryy
+// int Allocate_A128();
+// int Allocate_A64();
+// int Allocate_A32();
+// int Allocate_A16();
+// int Allocate_A8();
+// int Allocate_A4();
+// int Allocate_A2();
+// int Allocate_A1();
 //================Utilities for memory alloaction ====================////
 
 // Initializing Memory 
-bool A256[4]={0,0,0,0};
-bool A128[8]={0,0,0,0,0,0,0,0};
-bool A64[16]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-bool A32[32]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-bool A16[64]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+int A256[4]={0,0,0,0};
+int A128[8]={0,0,0,0,0,0,0,0};
+int A64[16]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+int A32[32]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+int A16[64]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-bool A8[128]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+int A8[128]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-bool A4[256]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+int A4[256]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-bool A2[512]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-bool A1[1024]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+int A2[512]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+int A1[1024]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+int allocate_A128(){
+    for (int i =0; i<8; i++){
+        if(A128[i]==0&&A256[i/2]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<8; i++){
+        if(A128[i]==0){
+            return i;
+        }
+    }
+    return -1;
+}
+int allocate_A64(){
+    for (int i =0; i<16; i++){
+        if(A64[i]==0&&A128[i/2]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<16; i++){
+        if(A64[i]==0&&A256[i/4]>0){
+            return i;
+        }
+    }
+     for (int i =0; i<16; i++){
+        if(A64[i]==0){
+            return i;
+        }
+    }
+    return -1;
+}
+int allocate_A32(){
+    for (int i =0; i<32; i++){
+        if(A32[i]==0&&A64[i/2]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<32; i++){
+        if(A32[i]==0&&A128[i/4]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<32; i++){
+        if(A32[i]==0&&A256[i/8]>0){
+            //printf("heeeeeeeeeeeeeeeeeeeeeeeeeeere\n");
+            return i;
+        }
+    }
+    for (int i =0; i<32; i++){
+        if(A32[i]==0){
+            return i;
+        }
+    }
+    return -1;
+}
+
+int allocate_A16(){
+    for (int i =0; i<64; i++){
+        if(A16[i]==0&&A32[i/2]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<64; i++){
+        if(A16[i]==0&&A64[i/4]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<64; i++){
+        if(A16[i]==0&&A128[i/8]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<64; i++){
+        if(A16[i]==0&&A256[i/16]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<64; i++){
+        if(A16[i]==0){
+            return i;
+        }
+    }
+    return -1;
+}
+int allocate_A8(){
+    for (int i =0; i<128; i++){
+        if(A8[i]==0&&A16[i/2]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<128; i++){
+        if(A8[i]==0&&A32[i/4]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<128; i++){
+        if(A8[i]==0&&A64[i/8]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<128; i++){
+        if(A8[i]==0&&A128[i/16]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<128; i++){
+        if(A8[i]==0&&A256[i/32]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<128; i++){
+        if(A8[i]==0){
+            return i;
+        }
+    }
+    return -1;
+}
+int allocate_A4(){
+    for (int i =0; i<256; i++){
+        if(A4[i]==0&&A8[i/2]){
+            return i;
+        }
+    }
+    for (int i =0; i<256; i++){
+        if(A4[i]==0&&A16[i/4]){
+            return i;
+        }
+    }
+    for (int i =0; i<256; i++){
+        if(A4[i]==0&&A32[i/8]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<256; i++){
+        if(A4[i]==0&&A64[i/16]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<256; i++){
+        if(A4[i]==0&&A128[i/32]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<256; i++){
+        if(A4[i]==0&&A256[i/64]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<256; i++){
+        if(A8[i]==0){
+            return i;
+        }
+    }
+    return -1;
+}
+int allocate_A2(){
+    for (int i =0; i<512; i++){
+        if(A2[i]==0&&A4[i/2]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<512; i++){
+        if(A2[i]==0&&A8[i/4]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<512; i++){
+        if(A2[i]==0&&A16[i/8]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<512; i++){
+        if(A2[i]==0&&A32[i/16]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<512; i++){
+        if(A2[i]==0&&A64[i/32]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<512; i++){
+        if(A2[i]==0&&A128[i/64]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<512; i++){
+        if(A2[i]==0&&A256[i/124]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<512; i++){
+        if(A2[i]==0){
+            return i;
+        }
+    }
+    return -1;
+}
+
+int allocate_A1(){
+    for (int i =0; i<1024; i++){
+        if(A1[i]==0&&A2[i/2]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<1024; i++){
+        if(A1[i]==0&&A4[i/4]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<1024; i++){
+        if(A1[i]==0&&A8[i/8]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<1024; i++){
+        if(A1[i]==0&&A16[i/16]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<1024; i++){
+        if(A1[i]==0&&A32[i/32]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<1024; i++){
+        if(A1[i]==0&&A64[i/64]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<1024; i++){
+        if(A1[i]==0&&A128[i/128]>0){
+            return i;
+        }
+    }
+    for (int i =0; i<1024; i++){
+        if(A1[i]==0&&A256[i/256]>0){
+            return i;
+        }
+    }
+      for (int i =0; i<1024; i++){
+        if(A1[i]==0){
+            return i;
+        }
+    }
+    return -1;
+}
 bool Allocation(struct process*p){
     int ProcessSize = p->memSize;
 
     if(ProcessSize<=256 && ProcessSize>128){ // Allocate in a 256 block
         for (int i =0; i<4; i++){
             if (A256[i]==0){ // then this block is free
-                A256[i]=1;
+                A256[i]++;
                 p->startAlloc=i;
                 //Allocating all other memorry arrays
                 for(int j=i*2;j<i*2+2;j++){
@@ -105,32 +360,35 @@ bool Allocation(struct process*p){
     }
     // process size smaller than 128
     if(ProcessSize>64 && ProcessSize<=128){
-        for (int i =0; i<8; i++){
-            if (A128[i]==0){ // then this block is free
-                A128[i]=1;
-                A256[i/2]=1;
+       // for (int i =0; i<8; i++){
+           int i = allocate_A128();
+           if (i==-1)
+            return false;
+            //if (A128[i]==0){ // then this block is free
+                A128[i]++;
+                A256[i/2]++;
                 p->startAlloc=i;
                 //Allocating all other memorry arrays
                 for(int j=i*2;j<i*2+2;j++){
-                    A64[j]=1;
+                    A64[j]++;
                 }
                 for(int q=i*4;q<i*4+4;q++){
-                    A32[q]=1;
+                    A32[q]++;
                 }
                 for(int w=i*8;w<i*8+8;w++){
-                    A16[w]=1;
+                    A16[w]++;
                 }
                 for(int y=i*16;y<i*16+16;y++){
-                    A8[y]=1;
+                    A8[y]++;
                 }
                 for(int f=i*32;f<i*32+32;f++){
-                    A4[f]=1;
+                    A4[f]++;
                 }
                 for(int r=i*64;r<i*64+64;r++){
-                    A2[r]=1;
+                    A2[r]++;
                 }
                 for(int e=i*128;e<i*128+128;e++){
-                    A1[e]=1;
+                    A1[e]++;
                 }
             fp = fopen("logs/memory/scheduler2.log", "a");
             fprintf(fp, "At time\t%d\tallocated\t%d\t\tbytes\tfor\tprocess\t%d\tfrom\t%d\tto\t%d\n",getClk(),p->memSize,
@@ -140,34 +398,36 @@ bool Allocation(struct process*p){
                 
                 return true;
             }
-        }
-    }
+    
     // process size smaller than 64
     if(ProcessSize>32 && ProcessSize<=64){
-        for (int i =0; i<16; i++){
-            if (A64[i]==0){ // then this block is free
-                A64[i]=1;
-                A128[i/2]=1;
-                A256[i/4]=1;
+        // for (int i =0; i<16; i++){
+        //     if (A64[i]==0){ // then this block is free
+            int i = allocate_A64();
+            if(i==-1)
+                return false;
+                A64[i]++;
+                A128[i/2]++;
+                A256[i/4]++;
                 p->startAlloc=i;
                 //Allocating all other memorry arrays
                 for(int j=i*2;j<i*2+2;j++){
-                    A32[j]=1;
+                    A32[j]++;
                 }
                 for(int q=i*4;q<i*4+4;q++){
-                    A16[q]=1;
+                    A16[q]++;
                 }
                 for(int w=i*8;w<i*8+8;w++){
-                    A8[w]=1;
+                    A8[w]++;
                 }
                 for(int y=i*16;y<i*16+16;y++){
-                    A4[y]=1;
+                    A4[y]++;
                 }
                 for(int f=i*32;f<i*32+32;f++){
-                    A2[f]=1;
+                    A2[f]++;
                 }
                 for(int r=i*64;r<i*64+64;r++){
-                    A1[r]=1;
+                    A1[r]++;
                 }
             fp = fopen("logs/memory/scheduler2.log", "a");
             fprintf(fp, "At time\t%d\tallocated\t%d\t\tbytes\tfor\tprocess\t%d\tfrom\t%d\tto\t%d\n",getClk(),p->memSize,
@@ -177,66 +437,75 @@ bool Allocation(struct process*p){
               
                 
                 return true;
-            }
-        }
+            
     }
     // process size smaller than 32 and bigger than 16
     if(ProcessSize>16 && ProcessSize<=32){
-        for (int i =0; i<32; i++){
-            if (A32[i]==0){ // then this block is free
-                A32[i]=1;
-                A64[i/2]=1;
-                A128[i/4]=1;
-                A256[i/8]=1;
+       // for (int i =0; i<32; i++){
+         //   if (A32[i]==0){ // then this block is free
+            int i = allocate_A32();
+            if(i==-1)
+                return false;
+                A32[i]++;
+                A64[i/2]++;
+                A128[i/4]++;
+                A256[i/8]++;
                 p->startAlloc=i;
                 //Allocating all other memorry arrays
                 for(int j=i*2;j<i*2+2;j++){
-                    A16[j]=1;
+                    A16[j]++;
                 }
                 for(int q=i*4;q<i*4+4;q++){
-                    A8[q]=1;
+                    A8[q]++;
                 }
                 for(int w=i*8;w<i*8+8;w++){
-                    A4[w]=1;
+                    A4[w]++;
                 }
                 for(int y=i*16;y<i*16+16;y++){
-                    A2[y]=1;
+                    A2[y]++;
                 }
                 for(int f=i*32;f<i*32+32;f++){
-                    A1[f]=1;
+                    A1[f]++;
                 }
+            printf("\n");
+                        printf("\n");
+                                    printf("\n");
+                      
             fp = fopen("logs/memory/scheduler2.log", "a");
             fprintf(fp, "At time\t%d\tallocated\t%d\t\tbytes\tfor\tprocess\t%d\tfrom\t%d\tto\t%d\n",getClk(),p->memSize,
             p->id,i*32,i*32+31);
+             // fprintf(fp,"iiiiiiiiiii %d\n",i);
             fflush(fp);
             fclose(fp);
               
-                return true;
-            }
-        }
+            return true;
+           
     }
         // process size smaller than 16 and bigger than 8
     if(ProcessSize>8 && ProcessSize<=16){
-        for (int i =0; i<64; i++){
-            if (A16[i]==0){ // then this block is free
-                A16[i]=1;
-                A32[i/2]=1;
-                A64[i/4]=1;
-                A128[i/8]=1;
-                A256[i/16]=1;
+        // for (int i =0; i<64; i++){
+        //     if (A16[i]==0){ // then this block is free
+            int i = allocate_A16();
+            if(i==-1)
+                return false;
+                A16[i]++;
+                A32[i/2]++;
+                A64[i/4]++;
+                A128[i/8]++;
+                A256[i/16]++;
                 p->startAlloc=i;
                 //Allocating all other memorry arrays
                 for(int j=i*2;j<i*2+2;j++){
-                    A8[j]=1;
+                    A8[j]++;
                 }
                 for(int q=i*4;q<i*4+4;q++){
-                    A4[q]=1;
+                    A4[q]++;
                 }
                 for(int w=i*8;w<i*8+8;w++){
-                    A2[w]=1;
+                    A2[w]++;
                 }
                 for(int y=i*16;y<i*16+16;y++){
-                    A1[y]=1;
+                    A1[y]++;
                 }
             fp = fopen("logs/memory/scheduler2.log", "a");
             fprintf(fp, "At time\t%d\tallocated\t%d\t\tbytes\tfor\tprocess\t%d\tfrom\t%d\tto\t%d\n",getClk(),p->memSize,
@@ -244,30 +513,32 @@ bool Allocation(struct process*p){
             fflush(fp);
             fclose(fp);
               
-                return true;
-            }
+            return true;
         }
-    }
+        
             // process size smaller than 16 and bigger than 8
     if(ProcessSize>4 && ProcessSize<=8){
-        for (int i =0; i<128; i++){
-            if (A8[i]==0){ // then this block is free
-                A8[i]=1;
-                A16[i/2]=1;
-                A32[i/4]=1;
-                A64[i/8]=1;
-                A128[i/16]=1;
-                A256[i/32]=1;
+        // for (int i =0; i<128; i++){
+        //     if (A8[i]==0){ // then this block is free
+        int i = allocate_A8();
+            if(i==-1)
+                return false;
+                A8[i]++;
+                A16[i/2]++;
+                A32[i/4]++;
+                A64[i/8]++;
+                A128[i/16]++;
+                A256[i/32]++;
                 p->startAlloc=i;
                 //Allocating all other memorry arrays
                 for(int j=i*2;j<i*2+2;j++){
-                    A4[j]=1;
+                    A4[j]++;
                 }
                 for(int q=i*4;q<i*4+4;q++){
-                    A2[q]=1;
+                    A2[q]++;
                 }
                 for(int w=i*8;w<i*8+8;w++){
-                    A1[w]=1;
+                    A1[w]++;
                 }
             fp = fopen("logs/memory/scheduler2.log", "a");
             fprintf(fp, "At time\t%d\tallocated\t%d\t\tbytes\tfor\tprocess\t%d\tfrom\t%d\tto\t%d\n",getClk(),p->memSize,
@@ -276,26 +547,28 @@ bool Allocation(struct process*p){
             fclose(fp);
                 return true;
             }
-        }
-    }
+       
                // process size smaller than 16 and bigger than 8
     if(ProcessSize>2 && ProcessSize<=4){
-        for (int i =0; i<256; i++){
-            if (A4[i]==0){ // then this block is free
-                A4[i]=1;
-                A8[i/2]=1;
-                A16[i/4]=1;
-                A32[i/8]=1;
-                A64[i/16]=1;
-                A128[i/32]=1;
-                A256[i/64]=1;
+        // for (int i =0; i<256; i++){
+            // if (A4[i]==0){ // then this block is free
+            int i = allocate_A4();
+            if(i==-1)
+                return false;
+                A4[i]++;
+                A8[i/2]++;
+                A16[i/4]++;
+                A32[i/8]++;
+                A64[i/16]++;
+                A128[i/32]++;
+                A256[i/64]++;
                 p->startAlloc=i;
                 //Allocating all other memorry arrays
                 for(int j=i*2;j<i*2+2;j++){
-                    A2[j]=1;
+                    A2[j]++;
                 }
                 for(int q=i*4;q<i*4+4;q++){
-                    A1[q]=1;
+                    A1[q]++;
                 }
             fp = fopen("logs/memory/scheduler2.log", "a");
             fprintf(fp, "At time\t%d\tallocated\t%d\t\tbytes\tfor\tprocess\t%d\tfrom\t%d\tto\t%d\n",getClk(),p->memSize,
@@ -304,24 +577,26 @@ bool Allocation(struct process*p){
             fclose(fp);
                 return true;
             }
-        }
-    }
+       
                    // process size smaller than 16 and bigger than 8
     if(ProcessSize>1 && ProcessSize<=2){
-        for (int i =0; i<512; i++){
-            if (A2[i]==0){ // then this block is free
-                A2[i]=1;
-                A4[i/2]=1;
-                A8[i/4]=1;
-                A16[i/8]=1;
-                A32[i/16]=1;
-                A64[i/32]=1;
-                A128[i/64]=1;
-                A256[i/128]=1;
+        // for (int i =0; i<512; i++){
+        //     if (A2[i]==0){ // then this block is free
+        int i = allocate_A2();
+            if(i==-1)
+                return false;
+                A2[i]++;
+                A4[i/2]++;
+                A8[i/4]++;
+                A16[i/8]++;
+                A32[i/16]++;
+                A64[i/32]++;
+                A128[i/64]++;
+                A256[i/128]++;
                 p->startAlloc=i;
                 //Allocating all other memorry arrays
                 for(int j=i*2;j<i*2+2;j++){
-                    A1[j]=1;
+                    A1[j]++;
                 }
             fp = fopen("logs/memory/scheduler2.log", "a");
             fprintf(fp, "At time\t%d\tallocated\t%d\t\tbytes\tfor\tprocess\t%d\tfrom\t%d\tto\t%d\n",getClk(),p->memSize,
@@ -330,21 +605,23 @@ bool Allocation(struct process*p){
             fclose(fp);
                 return true;
             }
-        }
-    }
+        
                        // process size smaller than 16 and bigger than 8
     if(ProcessSize<=1){
-        for (int i =0; i<1024; i++){
-            if (A1[i]==0){ // then this block is free
-                A1[i]=1;
-                A2[i/2]=1;
-                A4[i/4]=1;
-                A8[i/8]=1;
-                A16[i/16]=1;
-                A32[i/32]=1;
-                A64[i/64]=1;
-                A128[i/128]=1;
-                A256[i/256]=1;
+        // for (int i =0; i<1024; i++){
+        //     if (A1[i]==0){ // then this block is free
+        int i = allocate_A1();
+            if(i==-1)
+                return false;
+                A1[i]++;
+                A2[i/2]++;
+                A4[i/4]++;
+                A8[i/8]++;
+                A16[i/16]++;
+                A32[i/32]++;
+                A64[i/64]++;
+                A128[i/128]++;
+                A256[i/256]++;
             fp = fopen("logs/memory/scheduler2.log", "a");
             fprintf(fp, "At time\t%d\tallocated\t%d\t\tbytes\tfor\tprocess\t%d\tfrom\t%d\tto\t%d\n",getClk(),p->memSize,
             p->id,i,i+1);
@@ -352,9 +629,8 @@ bool Allocation(struct process*p){
             fclose(fp);
                 return true;
                 
-            }
         }
-    }
+        
     // for(int i =0;i<64;i++){
     //     printf("hi %d--------------- A16[i] = %d\n",i,A16[i]);
     // }
@@ -362,36 +638,37 @@ bool Allocation(struct process*p){
     return false;
 }
 void De_Allocation(struct process*p){
+    printf("DeAllocating process with is %d\n ",p->id);
     int ProcessSize = p->memSize;
     if(ProcessSize<=256 && ProcessSize>128){ // Allocate in a 256 block
         for (int i =0; i<4; i++){
             if (p->startAlloc==i){
                 //Allocating all other memorry arrays
-                A256[i]=0;
+                A256[i]--;
                 
                 for(int j=i*2;j<i*2+2;j++){
-                    A128[j]=0;
+                    A128[j]--;
                 }
                 for(int q=i*4;q<i*4+4;q++){
-                    A64[q]=0;
+                    A64[q]--;
                 }
                 for(int w=i*8;w<i*8+8;w++){
-                    A32[w]=0;
+                    A32[w]--;
                 }
                 for(int y=i*16;y<i*16+16;y++){
-                    A16[y]=0;
+                    A16[y]--;
                 }
                 for(int f=i*32;f<i*32+32;f++){
-                    A8[f]=0;
+                    A8[f]--;
                 }
                 for(int r=i*64;r<i*64+64;r++){
-                    A4[r]=0;
+                    A4[r]--;
                 }
                 for(int e=i*128;e<i*128+128;e++){
-                    A2[e]=0;
+                    A2[e]--;
                 }
                 for(int t=i*256;t<i*256+256;t++){
-                    A1[t]=0;
+                    A1[t]--;
                 }
             fp = fopen("logs/memory/scheduler2.log", "a");
             fprintf(fp, "At time\t%d\tfreed\t%d\t\tbytes\tfor\tprocess\t%d\tfrom\t%d\tto\t%d\n",getClk(),p->memSize,
@@ -409,29 +686,29 @@ void De_Allocation(struct process*p){
         for (int i =0; i<8; i++){
             if (p->startAlloc==i){
             
-                A128[i]=0;
-                A256[i/2]=0;
+                A128[i]--;
+                A256[i/2]--;
                 //Allocating all other memorry arrays
                 for(int j=i*2;j<i*2+2;j++){
-                    A64[j]=0;
+                    A64[j]--;
                 }
                 for(int q=i*4;q<i*4+4;q++){
-                    A32[q]=0;
+                    A32[q]--;
                 }
                 for(int w=i*8;w<i*8+8;w++){
-                    A16[w]=0;
+                    A16[w]--;
                 }
                 for(int y=i*16;y<i*16+16;y++){
-                    A8[y]=0;
+                    A8[y]--;
                 }
                 for(int f=i*32;f<i*32+32;f++){
-                    A4[f]=0;
+                    A4[f]--;
                 }
                 for(int r=i*64;r<i*64+64;r++){
-                    A2[r]=0;
+                    A2[r]--;
                 }
                 for(int e=i*128;e<i*128+128;e++){
-                    A1[e]=0;
+                    A1[e]--;
                 }
             fp = fopen("logs/memory/scheduler2.log", "a");
             fprintf(fp, "At time\t%d\tfreed\t%d\t\tbytes\tfor\tprocess\t%d\tfrom\t%d\tto\t%d\n",getClk(),p->memSize,
@@ -449,30 +726,30 @@ void De_Allocation(struct process*p){
     if(ProcessSize>32 && ProcessSize<=64){
         for (int i =0; i<16; i++){
             if (p->startAlloc==i){
-                A64[i]=0;
-                A128[i/2]=0;
-                A256[i/4]=0;
+                A64[i]--;
+                A128[i/2]--;
+                A256[i/4]--;
                 //Allocating all other memorry arrays
                 for(int j=i*2;j<i*2+2;j++){
-                    A32[j]=0;
+                    A32[j]--;
                 }
                 for(int q=i*4;q<i*4+4;q++){
-                    A16[q]=0;
+                    A16[q]--;
                 }
                 for(int w=i*8;w<i*8+8;w++){
-                    A8[w]=0;
+                    A8[w]--;
                 }
                 for(int y=i*16;y<i*16+16;y++){
-                    A4[y]=0;
+                    A4[y]--;
                 }
                 for(int f=i*32;f<i*32+32;f++){
-                    A2[f]=0;
+                    A2[f]--;
                 }
                 for(int r=i*64;r<i*64+64;r++){
-                    A1[r]=0;
+                    A1[r]--;
                 }
             fp = fopen("logs/memory/scheduler2.log", "a");
-            fprintf(fp, "At time\t%d\freed\t%d\t\tbytes\tfor\tprocess\t%d\tfrom\t%d\tto\t%d\n",getClk(),p->memSize,
+            fprintf(fp, "At time\t%d\tfreed\t%d\t\tbytes\tfor\tprocess\t%d\tfrom\t%d\tto\t%d\n",getClk(),p->memSize,
             p->id,i*64,i*64+63);
             fflush(fp);
             fclose(fp);
@@ -486,25 +763,25 @@ void De_Allocation(struct process*p){
     if(ProcessSize>16 && ProcessSize<=32){
         for (int i =0; i<32; i++){
             if (p->startAlloc==i){
-                A32[i]=0;
-                A64[i/2]=0;
-                A128[i/4]=0;
-                A256[i/8]=0;
+                A32[i]--;
+                A64[i/2]--;
+                A128[i/4]--;
+                A256[i/8]--;
                 //Allocating all other memorry arrays
                 for(int j=i*2;j<i*2+2;j++){
-                    A16[j]=0;
+                    A16[j]--;
                 }
                 for(int q=i*4;q<i*4+4;q++){
-                    A8[q]=0;
+                    A8[q]--;
                 }
                 for(int w=i*8;w<i*8+8;w++){
-                    A4[w]=0;
+                    A4[w]--;
                 }
                 for(int y=i*16;y<i*16+16;y++){
-                    A2[y]=0;
+                    A2[y]--;
                 }
                 for(int f=i*32;f<i*32+32;f++){
-                    A1[f]=0;
+                    A1[f]--;
                 }
             fp = fopen("logs/memory/scheduler2.log", "a");
             fprintf(fp, "At time\t%d\tfreed\t%d\t\tbytes\tfor\tprocess\t%d\tfrom\t%d\tto\t%d\n",getClk(),p->memSize,
@@ -520,23 +797,23 @@ void De_Allocation(struct process*p){
     if(ProcessSize>8 && ProcessSize<=16){
         for (int i =0; i<64; i++){
             if (p->startAlloc==i){
-                A16[i]=0;
-                A32[i/2]=0;
-                A64[i/4]=0;
-                A128[i/8]=0;
-                A256[i/16]=0;
+                A16[i]--;
+                A32[i/2]--;
+                A64[i/4]--;
+                A128[i/8]--;
+                A256[i/16]--;
                 //Allocating all other memorry arrays
                 for(int j=i*2;j<i*2+2;j++){
-                    A8[j]=0;
+                    A8[j]--;
                 }
                 for(int q=i*4;q<i*4+4;q++){
-                    A4[q]=0;
+                    A4[q]--;
                 }
                 for(int w=i*8;w<i*8+8;w++){
-                    A2[w]=0;
+                    A2[w]--;
                 }
                 for(int y=i*16;y<i*16+16;y++){
-                    A1[y]=0;
+                    A1[y]--;
                 }
             fp = fopen("logs/memory/scheduler2.log", "a");
             fprintf(fp, "At time\t%d\tfreed\t%d\t\tbytes\tfor\tprocess\t%d\tfrom\t%d\tto\t%d\n",getClk(),p->memSize,
@@ -552,21 +829,21 @@ void De_Allocation(struct process*p){
     if(ProcessSize>4 && ProcessSize<=8){
         for (int i =0; i<128; i++){
             if (p->startAlloc==i){
-                A8[i]=0;
-                A16[i/2]=0;
-                A32[i/4]=0;
-                A64[i/8]=0;
-                A128[i/16]=0;
-                A256[i/32]=0;
+                A8[i]--;
+                A16[i/2]--;
+                A32[i/4]--;
+                A64[i/8]--;
+                A128[i/16]--;
+                A256[i/32]--;
                 //Allocating all other memorry arrays
                 for(int j=i*2;j<i*2+2;j++){
-                    A4[j]=0;
+                    A4[j]--;
                 }
                 for(int q=i*4;q<i*4+4;q++){
-                    A2[q]=0;
+                    A2[q]--;
                 }
                 for(int w=i*8;w<i*8+8;w++){
-                    A1[w]=0;
+                    A1[w]--;
                 }
             fp = fopen("logs/memory/scheduler2.log", "a");
             fprintf(fp, "At time\t%d\tfreed\t%d\t\tbytes\tfor\tprocess\t%d\tfrom\t%d\tto\t%d\n",getClk(),p->memSize,
@@ -582,22 +859,22 @@ void De_Allocation(struct process*p){
     if(ProcessSize>2 && ProcessSize<=4){
         for (int i =0; i<256; i++){
             if (p->startAlloc==i){
-                A4[i]=0;
-                A8[i/2]=0;
-                A16[i/4]=0;
-                A32[i/8]=0;
-                A64[i/16]=0;
-                A128[i/32]=0;
-                A256[i/64]=0;
+                A4[i]--;
+                A8[i/2]--;
+                A16[i/4]--;
+                A32[i/8]--;
+                A64[i/16]--;
+                A128[i/32]--;
+                A256[i/64]--;
                 //Allocating all other memorry arrays
                 for(int j=i*2;j<i*2+2;j++){
-                    A2[j]=0;
+                    A2[j]--;
                 }
                 for(int q=i*4;q<i*4+4;q++){
-                    A1[q]=0;
+                    A1[q]--;
                 }
             fp = fopen("logs/memory/scheduler2.log", "a");
-            fprintf(fp, "At time\t%d\tallocated\t%d\t\tbytes\tfor\tprocess\t%d\tfrom\t%d\tto\t%d\n",getClk(),p->memSize,
+            fprintf(fp, "At time\t%d\tfreed\t%d\t\tbytes\tfor\tprocess\t%d\tfrom\t%d\tto\t%d\n",getClk(),p->memSize,
             p->id,i*4,i*4+3);
             fflush(fp);
             fclose(fp);
@@ -610,17 +887,17 @@ void De_Allocation(struct process*p){
     if(ProcessSize>1 && ProcessSize<=2){
         for (int i =0; i<512; i++){
             if (p->startAlloc==i){
-                A2[i]=0;
-                A4[i/2]=0;
-                A8[i/4]=0;
-                A16[i/8]=0;
-                A32[i/16]=0;
-                A64[i/32]=0;
-                A128[i/64]=0;
-                A256[i/128]=0;
+                A2[i]--;
+                A4[i/2]--;
+                A8[i/4]--;
+                A16[i/8]--;
+                A32[i/16]--;
+                A64[i/32]--;
+                A128[i/64]--;
+                A256[i/128]--;
                 //Allocating all other memorry arrays
                 for(int j=i*2;j<i*2+2;j++){
-                    A1[j]=0;
+                    A1[j]--;
                 }
             fprintf(fp, "At time\t%d\tfreed\t%d\t\tbytes\tfor\tprocess\t%d\tfrom\t%d\tto\t%d\n",getClk(),p->memSize,
             p->id,i*2,i*2+1);
@@ -635,18 +912,18 @@ void De_Allocation(struct process*p){
     if(ProcessSize<=1){
         for (int i =0; i<1024; i++){
             if (p->startAlloc==i){
-                A1[i]=0;
-                A1[i]=0;
-                A2[i/2]=0;
-                A4[i/4]=0;
-                A8[i/8]=0;
-                A16[i/16]=0;
-                A32[i/32]=0;
-                A64[i/64]=0;
-                A128[i/128]=0;
-                A256[i/256]=0;
-                            fp = fopen("logs/memory/scheduler2.log", "a");
-            fprintf(fp, "At time\t%d\freed\t%d\t\tbytes\tfor\tprocess\t%d\tfrom\t%d\tto\t%d\n",getClk(),p->memSize,
+                A1[i]--;
+              
+                A2[i/2]--;
+                A4[i/4]--;
+                A8[i/8]--;
+                A16[i/16]--;
+                A32[i/32]--;
+                A64[i/64]--;
+                A128[i/128]--;
+                A256[i/256]--;
+                fp = fopen("logs/memory/scheduler2.log", "a");
+            fprintf(fp, "At time\t%d\tfreed\t%d\t\tbytes\tfor\tprocess\t%d\tfrom\t%d\tto\t%d\n",getClk(),p->memSize,
             p->id,i,i+1);
             fflush(fp);
             fclose(fp);
@@ -688,6 +965,9 @@ int main(int argc, char * argv[]){
     num_proc=message.num_proc;
     if(message.algo==1){
         RoundRobin();
+    }
+    if(message.algo==2){
+        SRTN();
     }
     if(message.algo==3){
         HPF();
@@ -743,7 +1023,7 @@ void myhandler(int signum){
     signal(SIGUSR1,myhandler);
    
 }
-struct process* getCurProcessHPF( struct pnode*P_Queue,struct Queue*Wait_Q){
+struct process* getCurProcessHPF(struct Queue*Wait_Q){
     printf("in GETTTTTT CURRRRRRRRRRRRRR clkkkkk %d\n",getClk());
     printf("in the wait queeeeeeueeeeeee \n");
     print_Queue(Wait_Q);
@@ -764,8 +1044,8 @@ struct process* getCurProcessHPF( struct pnode*P_Queue,struct Queue*Wait_Q){
                 // if it was allocated before then schedule it
                 // if not check if it can be allocated
                 while(true){
-                    struct process *R_start=peek(&P_Queue);
-                    pop(&P_Queue);
+                    struct process *R_start=peek(&pQHead);
+                    pop(&pQHead);
                     if(R_start == NULL){
                         return NULL;
                     }
@@ -802,13 +1082,13 @@ struct process* getCurProcessHPF( struct pnode*P_Queue,struct Queue*Wait_Q){
         // if the wait queue is empty then choose the first 
         // this block is the same as block from line 747 till line 768.
         while(true){
-            struct process *R_start=peek(&P_Queue);
+            struct process *R_start=peek(&pQHead);
             printf("PEAKKKKKKKKKKK %d\n",R_start->id);
             if(R_start == NULL){
                     // enqueue(RR_Queue,prev_process);
                     return NULL;
                 }
-                pop(&P_Queue);
+                pop(&pQHead);
                 printf("PPPOPPPPPED CLK %d pid %d\n",getClk(),R_start->id);
                 if(R_start->startAlloc!=-1){
                     tempcur_process=R_start;
@@ -833,15 +1113,14 @@ struct process* getCurProcessHPF( struct pnode*P_Queue,struct Queue*Wait_Q){
 
 void HPF(){
     fp = fopen("logs/HPF/scheduler2.log", "w");
-    // printf("\nSechedular: I have just begun clkk %d\n",getClk());
-    // fprintf(fp, "#At time\tx\tprocess\ty\tstate\tarr\tw\ttotal\tz\tremain\ty\twait\t\n");
-    // fflush(fp);
+    printf("\nSechedular: I have just begun clkk %d\n",getClk());
+    fprintf(fp, "#At time\tx\tprocess\ty\tstate\tarr\tw\ttotal\tz\tremain\ty\twait\t\n");
+    fflush(fp);
     fclose(fp);
     struct msgProcess *arr=(struct msgProcess*)malloc(num_proc*sizeof(struct msgProcess));
     struct process*cur_process=NULL;
-    struct Queue*Wait_Queue=Queue_Constructor();
     //struct Node*cur_node;
-    struct pnode * pQHead=NULL;
+    struct Queue *Wait_Q=Queue_Constructor();
     struct pnode * cur_node=NULL;
     int y=0;
     int rec=1;
@@ -868,7 +1147,7 @@ void HPF(){
             if(handler==1){
                 float num=(float)getClk()-cur_process->arrivalTime;
                 float dem=(float)cur_process->runTime;
-            
+                De_Allocation(cur_process);
                 float result=num/dem;
                 float WTA=ceilf(result*100)/100;
                 total_wait+=cur_process->wait_time;
@@ -929,38 +1208,24 @@ void HPF(){
 
         if(PQisEmpty(&pQHead)==true&&rec==-1){
             if(cur_process!=NULL){
-            if(cur_process->status==-1){
-            printf("SCH::EXITING\n");
-            return;
+                if(cur_process->status!=1){
+                printf("SCH::EXITING\n");
+                return;
+                }
             }
-            }
-            else
-            {
+            else{
                 return;
             }
-            
             
         }
         //if there is process that should be stopped;
         //-1 cur has finished or number pid to stop it
         int temp=0;
-        if(PQisEmpty(&pQHead)==false){
-            // cur_process=peek(&pQHead);
-            // pop(&pQHead);
-            if(cur_process==NULL){
-                cur_process=getCurProcessHPF(pQHead,Wait_Queue);
-                if(cur_process==NULL)
-                    continue;
-                temp=1;
-            }
-            else if(cur_process->status==-1){
-                printf("HPPFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\n");
-                cur_process=getCurProcessHPF(pQHead,Wait_Queue);
-                if(cur_process==NULL)
-                    continue;
-                temp=1;
-
-            }
+        if(cur_process==NULL && PQisEmpty(&pQHead)==false){;
+            cur_process=getCurProcessHPF(Wait_Q);
+            if(cur_process==NULL)
+            continue;
+            temp=1;
         }
 
         //  printf("BLOCKKKKKKK 22222\n");
@@ -969,12 +1234,7 @@ void HPF(){
             // printf("BLOCKKKKKKK 333333\n");
             if(cur_process->status!=1){ // stopped 0 finished -1 not started yet 0
             if(temp!=1){
-                cur_process=getCurProcessHPF(pQHead,Wait_Queue);
-                if(cur_process==NULL)
-                    continue;
-                // printf("BLOCKKKKKKK 55555555555555\n");
-                // cur_process=peek(&pQHead);
-                // pop(&pQHead);
+                 cur_process=getCurProcessHPF(Wait_Q);
             }
             printf("clk :: %d process %d started \n",getClk(),cur_process->id);
             cur_process->wait_time=getClk()-cur_process->arrivalTime;
@@ -1002,6 +1262,7 @@ void HPF(){
     }
 
 }
+
 
 struct process* getCurProcess(struct Queue*RR_Queue,struct Queue*Wait_Q,struct process *prev_process){
     printf("in GETTTTTT CURRRRRRRRRRRRRR clkkkkk %d\n",getClk());
@@ -1055,7 +1316,7 @@ struct process* getCurProcess(struct Queue*RR_Queue,struct Queue*Wait_Q,struct p
         // schedule it and remove it from wait_Queue
         // and enqueue it to ready queue
         tempcur_process=start->processObj;
-        enqueue(RR_Queue,tempcur_process);
+        // enqueue(RR_Queue,tempcur_process);
         remove_Node(Wait_Q,tempcur_process);
         return tempcur_process;
 
@@ -1289,4 +1550,277 @@ void RoundRobin(){
     }
 
 
+}
+
+struct process* getCurProcess_SRTN(struct Queue*Wait_Q,struct process *prev_process){
+    struct process* tempcur_process=NULL;
+    // dequeue(RR_Queue);
+    // if the wait Queue is not empty listen to it
+    // and find the first one that can fit the memory
+    if(isEmpty(Wait_Q)==false){
+        struct Node*start=Wait_Q->headPtr;
+        while(Allocation(start->processObj)==false){
+            start=start->nextNodePtr;
+            //cant find any one to allocate inside wait Queue
+            // look at the ready Queue
+            if(start==NULL){
+                //dequeue a node from read queue 
+                // if it was allocated before then schedule it
+                // if not check if it can be allocated
+                while(true){
+                    struct process* R_start=peek(&pQHead);
+                    if(R_start == NULL){
+                        // enqueue(RR_Queue,prev_process);
+                        return prev_process;
+                    }
+                    if(R_start->startAlloc!=-1){
+                        tempcur_process=R_start;
+                        // enqueue(RR_Queue,tempcur_process);
+                        return tempcur_process;
+                    }
+                    if(Allocation(R_start)==true){
+                        printf("alloacteeee clkkkk %d iddddd %d\n",getClk(),R_start->id);
+                        tempcur_process=R_start;
+                        // enqueue(RR_Queue,tempcur_process);
+                        return tempcur_process;
+                    }
+                    //if the process that in Ready queue cant be allocated and wasnt 
+                    //scheduled before put it in wait queue.
+                    else{
+                        printf("%d %d %d %d \n",A256[0],A256[1],A256[2],A256[3]);
+                        printf("can't alloacteeee clkkkk %d iddddd %d\n",getClk(),R_start->id);
+                        // pop(&pQHead);
+                        enqueue(Wait_Q,R_start);
+                    }
+                }
+            }
+            
+        }
+        // if you found a process in wait_Queue that can be allocated
+        // schedule it and remove it from wait_Queue
+        // and enqueue it to ready queue
+        tempcur_process=start->processObj;
+        remove_Node(Wait_Q,tempcur_process);
+        push(&pQHead,tempcur_process,tempcur_process->priority);
+        return tempcur_process;
+
+    }
+    else{
+        // if the wait queue is empty then choose the first 
+        // this block is the same as block from line 747 till line 768.
+        while(true){
+            struct process* R_start=peek(&pQHead);
+            if(R_start == NULL){
+                    // enqueue(RR_Queue,prev_process);
+                    return prev_process;
+                }
+                if(R_start->startAlloc!=-1){
+                    tempcur_process=R_start;
+                    // enqueue(RR_Queue,tempcur_process);
+                    return tempcur_process;
+                }
+                if(Allocation(R_start)==true){
+                    printf("alloacteeee clkkkk %d iddddd %d\n",getClk(),R_start->id);
+                    tempcur_process=R_start;
+                    // enqueue(RR_Queue,tempcur_process);
+                    return tempcur_process;
+                }
+                else{
+                      printf("%d %d %d %d \n",A256[0],A256[1],A256[2],A256[3]);
+                    printf("can't alloacteeee clkkkk %d iddddd %d\n",getClk(),R_start->id);
+                    pop(&pQHead);
+                    enqueue(Wait_Q,R_start);
+            }
+        }
+
+    }
+    return tempcur_process;
+
+}
+
+void SRTN(){
+    fp = fopen("logs/SRTN/scheduler2.log", "w");
+    printf("\nSechedular: I have just begun clkk %d\n",getClk());
+    fprintf(fp, "#At time\tx\tprocess\ty\tstate\tarr\tw\ttotal\tz\tremain\ty\twait\t\n");
+    fflush(fp);
+    fclose(fp);
+    struct msgProcess *arr=(struct msgProcess*)malloc(num_proc*sizeof(struct msgProcess));
+    struct process*cur_process=NULL;
+    struct Queue *Wait_Q=Queue_Constructor();
+    //struct Node*cur_node;
+    struct pnode * cur_node=NULL;
+    int y=0;
+    int rec=1;
+    int idx=0;
+    int sch=getpid();
+    signal(SIGUSR1,myhandler);
+    printf("my pid is %d....\n",getpid());
+    while(1){
+        printf("SCH::Clkkk Cycle %d\n",getClk());
+        if(cur_process!=NULL){
+            if(cur_process->status==1){
+                cur_process->remainingTime-=1;
+                pQHead->priority--;
+                if(cur_process->remainingTime>0){
+                }
+                else{
+                    if(handler==0){
+                        sleep(5);
+                        printf("clk :: %d process %d finished \n",getClk(),cur_process->id);
+                        cur_process->status=-1;
+                    }
+
+                }
+            }
+            if(handler==1){
+                printf("poping process......\n");
+                float num=(float)getClk()-cur_process->arrivalTime;
+                float dem=(float)cur_process->runTime;
+                De_Allocation(cur_process);
+                float result=num/dem;
+                float WTA=ceilf(result*100)/100;
+                total_wait+=cur_process->wait_time;
+                total_TA+=getClk()-cur_process->arrivalTime;
+                fp = fopen("logs/SRTN/scheduler2.log", "a");
+                fprintf(fp, "At time\t%d\tprocess\t%d\tfinished\tarr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\tTA\t%d\tWTA\t%.2f\n",
+                getClk(),cur_process->id
+                ,cur_process->arrivalTime,cur_process->runTime,cur_process->remainingTime,
+                cur_process->wait_time,getClk()-(cur_process->arrivalTime),WTA);
+                    fclose(fp);
+                cur_process->status=-1;
+                pop(&pQHead);
+                cur_process=NULL;
+                handler=0;
+            }
+        }
+
+        // Recieve a message first from the process_generator telling it how many processes will arrive in this clk cycle
+        // it will recieve -1 if there is no more processes to arrive later.
+        struct msgbuff m;
+        int r=msgrcv(M_PG2S_msqid , &m, sizeof(m.val),sch, !IPC_NOWAIT);
+        if(r==-1){
+            printf("MMMMMMMMMMMMSCH :: Error in receiving mssggggggggggggggg %d\n",getClk());
+        }
+        int temp_val=m.val;
+        rec=m.val;
+        // Thie while loop is responsible for recieving the processes'data.
+        printf("SCHHHHH:: m.val %d , clk %d\n",m.val,getClk());
+        while(temp_val!=0 && temp_val!=-1){
+            printf("IN LOOP :: SCHHHHH:: m.val %d , clk %d\n",m.val,getClk());
+            int rec_val=msgrcv(PG2S_msqid , &arr[idx], sizeof(arr[idx].p),sch, !IPC_NOWAIT);
+            if(rec_val!=-1){  
+                    printf("SCH::clk %d process id %d,arrival %d,runTime %d,priority %d,memsize %d,pid %ld\n",getClk()
+                                    ,arr[idx].p.id,arr[idx].p.arrivalTime,arr[idx].p.runTime,arr[idx].p.priority,arr[idx].p.memSize,arr[idx].p.pid);
+
+
+                    printf("\nENQUEUEU:::SCH::clk %d process id %d,arrival %d,runTime %d,priority %d,memsize %d,pid %ld\n",getClk()
+                                            ,arr[idx].p.id,arr[idx].p.arrivalTime,arr[idx].p.runTime,arr[idx].p.priority,arr[idx].p.memSize,arr[idx].p.pid);
+                  
+                    if(PQisEmpty(&pQHead)){
+                        pQHead=newNode(&arr[idx].p,arr[idx].p.runTime);
+                    }
+                    else{
+                        push(&pQHead,&arr[idx].p,arr[idx].p.runTime);
+                    }
+                    idx++;
+
+                    temp_val-=1;
+            }
+            else{
+                int clk=getClk();
+                printf("SCH :: Error in receiving mssggggggggggggggg %d\n",clk);
+            }
+
+        }
+
+
+        //========= At beginning of a clk cycle======///
+        // printf("BLOCKKKKKKK 11111\n");
+
+        if(PQisEmpty(&pQHead)==true&&rec==-1){
+            if(cur_process!=NULL){
+                if(cur_process->status!=1){
+                printf("SCH::EXITING\n");
+                return;
+                }
+            }
+            else{
+                return;
+            }
+            
+        }
+        //if there is process that should be stopped;
+        //-1 cur has finished or number pid to stop it
+        int temp=0;
+        if(cur_process==NULL && PQisEmpty(&pQHead)==false){
+            printf("getting new process...\n");
+            cur_process=getCurProcess_SRTN(Wait_Q,cur_process);
+            
+        }
+
+        if(cur_process!=NULL){
+            struct process * temp_p= cur_process;
+            // cur_process = peek(&pQHead);
+            cur_process=getCurProcess_SRTN(Wait_Q,cur_process);
+            printf("process ID:%d ,  status: %d....\n",cur_process->id,cur_process->status);
+
+
+            if(cur_process->pid!=temp_p->pid){
+                printf("Enter 1.......................\n");
+                int k=kill((pid_t)temp_p->pid,SIGUSR2);
+                if(k==-1)
+                    perror("Error in stopping signal\n"); 
+                else
+                    printf("SCH::SENTTTTTT SIGNALLLL clk %d STOP TO pid %ld",getClk(),temp_p->pid); 
+                fp = fopen("logs/SRTN/scheduler2.log", "a");
+                fprintf(fp, "At time\t%d\tprocess\t%d\tstopped\tarr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n",getClk(),temp_p->id
+                ,temp_p->arrivalTime,temp_p->runTime,temp_p->remainingTime,temp_p->wait_time);
+                // fflush(fp);
+                fclose(fp);
+                printf("\nProcess %d Paused at clk %d\n",temp_p->id,getClk());
+                temp_p->lstfinish_time=getClk(); 
+                temp_p->status=0;
+            }
+            
+
+            if(cur_process->pid==-1){
+                cur_process->wait_time=getClk()-cur_process->arrivalTime;
+                printf("\nSCH::1Process %d starts at clk %d\n",cur_process->id,getClk());
+                    fp = fopen("logs/SRTN/scheduler2.log", "a");
+                fprintf(fp, "At time\t%d\tprocess\t%d\tstarted\tarr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n",getClk(),cur_process->id
+                ,cur_process->arrivalTime,cur_process->runTime,cur_process->remainingTime,cur_process->wait_time);
+                // fflush(fp);
+                fclose(fp);
+                cur_process->pid=fork();
+                int cur_pid=cur_process->pid;
+                if(cur_pid==0){
+                    sprintf(number_str,"%d",cur_process->remainingTime);
+                    char*args[]={"./process.out",number_str,NULL};
+                    execv(args[0],args);
+                    exit(0);
+                }
+                cur_process->status=1;
+            }else{
+                if(cur_process->status==0){
+                    cur_process->status=1;
+                    cur_process->wait_time+=getClk()-cur_process->lstfinish_time;
+                    fp = fopen("logs/SRTN/scheduler2.log", "a");
+                    fprintf(fp, "At time\t%d\tprocess\t%d\tresumed\tarr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n",getClk(),cur_process->id
+                    ,cur_process->arrivalTime,cur_process->runTime,cur_process->remainingTime,cur_process->wait_time);
+                    // fflush(fp);
+                        fclose(fp);
+                    int k=kill((pid_t)cur_process->pid,SIGCONT);     
+                    
+                    if(k==-1)
+                        perror("Error in resuming signal\n");
+                    else
+                        printf("\nSCH::1Process %d Resume at clk %d\n",cur_process->id,getClk());
+                    }
+            }
+            
+                
+            
+        }
+
+}
 }

@@ -92,8 +92,11 @@ int main(int argc, char * argv[]){
     //======for printing in .perf file=====/////
 
     fp = fopen("logs/scheduler.perf", "w");
-    int u=(end_clk-start_clk)/total_run;
-    fprintf(fp,"CPU utilization = %d%%\n",u*100);
+    float u=(float)total_run/(float)(end_clk);
+    printf("TOTALLL RUNNNN %f\n",u);
+    u=roundf(u*100)/100;
+    printf("TOTALLL RUNNNN %f\n",u);
+    fprintf(fp,"CPU utilization = %.2f%%\n",u*100);
     float num=(float)total_TA;
     float dem=(float) num_proc;
     float result=num/dem;

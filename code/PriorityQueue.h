@@ -25,6 +25,9 @@ Node* newNode( struct process* proc , int p)
 // Return the value at head 
 struct process* peek(Node** head) 
 { 
+    if((*head)->processobj==NULL)
+        printf("priorityyyyyyyy NULLLLLLLLLLLL\n");
+    printf("POOOOOOOOOOOO %d\n",(*head)->processobj->id);
     return (*head)->processobj; 
 } 
   

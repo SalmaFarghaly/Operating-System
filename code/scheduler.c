@@ -697,7 +697,7 @@ int main(int argc, char * argv[]){
     
  
     //======for printing in .perf file=====/////
-    fclose(fp);
+    // fclose(fp);
     fp = fopen("logs/Round_Robin/scheduler2.perf", "w");
     float num=(float)total_TA;
     float dem=(float) num_proc;
@@ -743,6 +743,93 @@ void myhandler(int signum){
     signal(SIGUSR1,myhandler);
    
 }
+struct process* getCurProcessHPF( struct pnode*P_Queue,struct Queue*Wait_Q){
+    printf("in GETTTTTT CURRRRRRRRRRRRRR clkkkkk %d\n",getClk());
+    printf("in the wait queeeeeeueeeeeee \n");
+    print_Queue(Wait_Q);
+    printf("RRRRRRR queeeeeeueeeeeee \n");
+    // print_Queue(P_Queue);
+    struct process* tempcur_process=NULL;
+    // dequeue(RR_Queue);
+    // if the wait Queue is not empty listen to it
+    // and find the first one that can fit the memory
+    if(isEmpty(Wait_Q)==false){
+        struct Node*start=Wait_Q->headPtr;
+        while(Allocation(start->processObj)==false){
+            start=start->nextNodePtr;
+            //cant find any one to allocate inside wait Queue
+            // look at the ready Queue
+            if(start==NULL){
+                //dequeue a node from read queue 
+                // if it was allocated before then schedule it
+                // if not check if it can be allocated
+                while(true){
+                    struct process *R_start=peek(&P_Queue);
+                    pop(&P_Queue);
+                    if(R_start == NULL){
+                        return NULL;
+                    }
+                    if(R_start->startAlloc!=-1){
+                        tempcur_process=R_start;
+                        return tempcur_process;
+                    }
+                    if(Allocation(R_start)==true){
+                        printf("alloacteeee clkkkk %d iddddd %d\n",getClk(),R_start->id);
+                        tempcur_process=R_start;
+                        return tempcur_process;
+                    }
+                    //if the process that in Ready queue cant be allocated and wasnt 
+                    //scheduled before put it in wait queue.
+                    else{
+                        printf("%d %d %d %d \n",A256[0],A256[1],A256[2],A256[3]);
+                        printf("can't alloacteeee clkkkk %d iddddd %d\n",getClk(),R_start->id);
+                        enqueue(Wait_Q,R_start);
+                    }
+                }
+            }
+            
+        }
+        // if you found a process in wait_Queue that can be allocated
+        // schedule it and remove it from wait_Queue
+        // and enqueue it to ready queue
+        tempcur_process=start->processObj;
+        remove_Node(Wait_Q,tempcur_process);
+        return tempcur_process;
+
+    }
+    else{
+        printf("ELSEEEEEEEEEEEEEEEEEE BLOCKKKKKKKKKK\n");
+        // if the wait queue is empty then choose the first 
+        // this block is the same as block from line 747 till line 768.
+        while(true){
+            struct process *R_start=peek(&P_Queue);
+            printf("PEAKKKKKKKKKKK %d\n",R_start->id);
+            if(R_start == NULL){
+                    // enqueue(RR_Queue,prev_process);
+                    return NULL;
+                }
+                pop(&P_Queue);
+                printf("PPPOPPPPPED CLK %d pid %d\n",getClk(),R_start->id);
+                if(R_start->startAlloc!=-1){
+                    tempcur_process=R_start;
+                    return tempcur_process;
+                }
+                if(Allocation(R_start)==true){
+                    printf("alloacteeee clkkkk %d iddddd %d\n",getClk(),R_start->id);
+                    tempcur_process=R_start;
+                    return tempcur_process;
+                }
+                else{
+                      printf("%d %d %d %d \n",A256[0],A256[1],A256[2],A256[3]);
+                    printf("can't alloacteeee clkkkk %d iddddd %d\n",getClk(),R_start->id);
+                    enqueue(Wait_Q,R_start);
+            }
+        }
+
+    }
+    return tempcur_process;
+
+}
 
 void HPF(){
     fp = fopen("logs/HPF/scheduler2.log", "w");
@@ -752,6 +839,7 @@ void HPF(){
     fclose(fp);
     struct msgProcess *arr=(struct msgProcess*)malloc(num_proc*sizeof(struct msgProcess));
     struct process*cur_process=NULL;
+    struct Queue*Wait_Queue=Queue_Constructor();
     //struct Node*cur_node;
     struct pnode * pQHead=NULL;
     struct pnode * cur_node=NULL;
@@ -840,19 +928,39 @@ void HPF(){
         // printf("BLOCKKKKKKK 11111\n");
 
         if(PQisEmpty(&pQHead)==true&&rec==-1){
-            if(cur_process->status!=1){
+            if(cur_process!=NULL){
+            if(cur_process->status==-1){
             printf("SCH::EXITING\n");
             return;
             }
+            }
+            else
+            {
+                return;
+            }
+            
             
         }
         //if there is process that should be stopped;
         //-1 cur has finished or number pid to stop it
         int temp=0;
-        if(cur_process==NULL && PQisEmpty(&pQHead)==false){
-            cur_process=peek(&pQHead);
-            pop(&pQHead);
-            temp=1;
+        if(PQisEmpty(&pQHead)==false){
+            // cur_process=peek(&pQHead);
+            // pop(&pQHead);
+            if(cur_process==NULL){
+                cur_process=getCurProcessHPF(pQHead,Wait_Queue);
+                if(cur_process==NULL)
+                    continue;
+                temp=1;
+            }
+            else if(cur_process->status==-1){
+                printf("HPPFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\n");
+                cur_process=getCurProcessHPF(pQHead,Wait_Queue);
+                if(cur_process==NULL)
+                    continue;
+                temp=1;
+
+            }
         }
 
         //  printf("BLOCKKKKKKK 22222\n");
@@ -861,9 +969,12 @@ void HPF(){
             // printf("BLOCKKKKKKK 333333\n");
             if(cur_process->status!=1){ // stopped 0 finished -1 not started yet 0
             if(temp!=1){
+                cur_process=getCurProcessHPF(pQHead,Wait_Queue);
+                if(cur_process==NULL)
+                    continue;
                 // printf("BLOCKKKKKKK 55555555555555\n");
-                cur_process=peek(&pQHead);
-                pop(&pQHead);
+                // cur_process=peek(&pQHead);
+                // pop(&pQHead);
             }
             printf("clk :: %d process %d started \n",getClk(),cur_process->id);
             cur_process->wait_time=getClk()-cur_process->arrivalTime;

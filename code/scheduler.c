@@ -22,15 +22,17 @@ int handler=0;
 int prev_clk=-1;
 int cur_clk=0;
 long sch=0;
+int WTA_idx=0;
+int total_run=0;
 //===============Functions used by RoundRobin Function
-void RoundRobin();
+void RoundRobin(float*WTA_arr);
 bool RR_allFinished(struct Queue*q);
 struct process* findProcessWithPid(int pid);
 //================Functions used by HPF 
-void HPF();
+void HPF(float*WTA_arr);
 
 //================Functions used by SRTN
-void SRTN();
+void SRTN(float*WTA_arr);
 
 //=============logs=======
 FILE*fp;
@@ -41,7 +43,7 @@ void myhandler();
 
 int main(int argc, char * argv[]){
 
-
+    
     signal(SIGUSR1,myhandler);//handling the exit signal from the child process.
     initClk();
     key_t PG2S_key_id_2;
@@ -64,22 +66,34 @@ int main(int argc, char * argv[]){
     quantum=message.quantum;
     tempQuantum=quantum;
     num_proc=message.num_proc;
+    float*WTA_arr=(float*)malloc(num_proc*sizeof(float));
+    int start_clk=getClk();
     if(message.algo==1){
-        RoundRobin();
+        RoundRobin(WTA_arr);
     }
     if(message.algo==2){
-        SRTN();
+        SRTN(WTA_arr);
     }
     if(message.algo==3){
-        HPF();
+        HPF(WTA_arr);
+    }
+    int end_clk=getClk();
+    //======calculate standard deviation====///
+    float sum=0.0,mean,SD=0.0;
+    for(int i=0;i<num_proc;i++){
+        sum+=WTA_arr[i];
+    }
+    mean=sum/num_proc;
+    for(int i=0;i<num_proc;i++){
+        SD+=pow(WTA_arr[i]-mean,2);
+        SD=sqrt(SD/num_proc);
     }
   
-
-    
- 
     //======for printing in .perf file=====/////
-    fclose(fp);
-    fp = fopen("logs/Round_Robin/scheduler2.perf", "w");
+
+    fp = fopen("logs/scheduler.perf", "w");
+    int u=(end_clk-start_clk)/total_run;
+    fprintf(fp,"CPU utilization = %d%%\n",u*100);
     float num=(float)total_TA;
     float dem=(float) num_proc;
     float result=num/dem;
@@ -88,7 +102,7 @@ int main(int argc, char * argv[]){
     result=num/dem;
     printf("WTA %.2f ,WAIT %.2f\n",result,result);
     fprintf(fp,"Avg Waiting = %.2f\n",roundf(result*100)/100);
-    printf("WTA %.2f ,WAIT %.2f\n",result,result);
+    fprintf(fp,"Std WTA = %.2f\n",roundf(SD*100)/100);
     fclose(fp);
     destroyClk(true);
     exit(0);
@@ -125,7 +139,7 @@ void myhandler(int signum){
    
 }
 
-void HPF(){
+void HPF(float*WTA_arr){
     fp = fopen("logs/HPF/scheduler2.log", "w");
     printf("\nSechedular: I have just begun clkk %d\n",getClk());
     fprintf(fp, "#At time\tx\tprocess\ty\tstate\tarr\tw\ttotal\tz\tremain\ty\twait\t\n");
@@ -147,6 +161,7 @@ void HPF(){
         if(cur_process!=NULL){
             if(cur_process->status==1){
                 cur_process->remainingTime-=1;
+                total_run++;
                 if(cur_process->remainingTime>0){
                 }
                 else{
@@ -164,6 +179,8 @@ void HPF(){
 
                 float result=num/dem;
                 float WTA=ceilf(result*100)/100;
+                WTA_arr[WTA_idx]=WTA;
+                WTA_idx++;
                 total_wait+=cur_process->wait_time;
                 total_TA+=getClk()-cur_process->arrivalTime;
                 fp = fopen("logs/HPF/scheduler2.log", "a");
@@ -221,9 +238,14 @@ void HPF(){
         // printf("BLOCKKKKKKK 11111\n");
 
         if(PQisEmpty(&pQHead)==true&&rec==-1){
-            if(cur_process->status!=1){
-            printf("SCH::EXITING\n");
-            return;
+            if(cur_process!=NULL){
+                if(cur_process->status!=1){
+                printf("SCH::EXITING\n");
+                return;
+                }
+            }
+            else{
+                return;
             }
             
         }
@@ -273,7 +295,7 @@ void HPF(){
 
 }
 
-void RoundRobin(){
+void RoundRobin(float*WTA_arr){
 
     
     sch=getpid();
@@ -297,6 +319,7 @@ void RoundRobin(){
         if(cur_process!=NULL){
             if(cur_process->status==1){
                 cur_process->remainingTime-=1;
+                total_run++;
                 if(cur_process->remainingTime>0){
                     tempQuantum-=1;
                     if(tempQuantum<=0){
@@ -323,6 +346,8 @@ void RoundRobin(){
 
                 float result=num/dem;
                 float WTA=ceilf(result*100)/100;
+                WTA_arr[WTA_idx]=WTA;
+                WTA_idx++;
                 total_wait+=cur_process->wait_time;
                 total_TA+=getClk()-cur_process->arrivalTime;
                 fp = fopen("logs/Round_Robin/scheduler2.log", "a");
@@ -468,7 +493,7 @@ void RoundRobin(){
 
 
 
-void SRTN(){
+void SRTN(float*WTA_arr){
     fp = fopen("logs/SRTN/scheduler2.log", "w");
     printf("\nSechedular: I have just begun clkk %d\n",getClk());
     fprintf(fp, "#At time\tx\tprocess\ty\tstate\tarr\tw\ttotal\tz\tremain\ty\twait\t\n");
@@ -490,6 +515,7 @@ void SRTN(){
         if(cur_process!=NULL){
             if(cur_process->status==1){
                 cur_process->remainingTime-=1;
+                total_run++;
                 pQHead->priority--;
                 if(cur_process->remainingTime>0){
                 }
@@ -509,6 +535,8 @@ void SRTN(){
 
                 float result=num/dem;
                 float WTA=ceilf(result*100)/100;
+                WTA_arr[WTA_idx]=WTA;
+                WTA_idx++;
                 total_wait+=cur_process->wait_time;
                 total_TA+=getClk()-cur_process->arrivalTime;
                 fp = fopen("logs/SRTN/scheduler2.log", "a");
@@ -568,9 +596,14 @@ void SRTN(){
         // printf("BLOCKKKKKKK 11111\n");
 
         if(PQisEmpty(&pQHead)==true&&rec==-1){
-            if(cur_process->status!=1){
-            printf("SCH::EXITING\n");
-            return;
+            if(cur_process!=NULL){
+                if(cur_process->status!=1){
+                printf("SCH::EXITING\n");
+                return;
+                }
+            }
+            else{
+                return;
             }
             
         }

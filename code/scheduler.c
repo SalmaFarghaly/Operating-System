@@ -469,7 +469,7 @@ void RoundRobin(){
 
 
 void SRTN(){
-    fp = fopen("logs/HPF/scheduler2.log", "w");
+    fp = fopen("logs/SRTN/scheduler2.log", "w");
     printf("\nSechedular: I have just begun clkk %d\n",getClk());
     fprintf(fp, "#At time\tx\tprocess\ty\tstate\tarr\tw\ttotal\tz\tremain\ty\twait\t\n");
     fflush(fp);
@@ -511,7 +511,7 @@ void SRTN(){
                 float WTA=ceilf(result*100)/100;
                 total_wait+=cur_process->wait_time;
                 total_TA+=getClk()-cur_process->arrivalTime;
-                fp = fopen("logs/HPF/scheduler2.log", "a");
+                fp = fopen("logs/SRTN/scheduler2.log", "a");
                 fprintf(fp, "At time\t%d\tprocess\t%d\tfinished\tarr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\tTA\t%d\tWTA\t%.2f\n",
                 getClk(),cur_process->id
                 ,cur_process->arrivalTime,cur_process->runTime,cur_process->remainingTime,
@@ -600,7 +600,7 @@ void SRTN(){
                     perror("Error in stopping signal\n"); 
                 else
                     printf("SCH::SENTTTTTT SIGNALLLL clk %d STOP TO pid %ld",getClk(),temp_p->pid); 
-                fp = fopen("logs/Round_Robin/scheduler2.log", "a");
+                fp = fopen("logs/SRTN/scheduler2.log", "a");
                 fprintf(fp, "At time\t%d\tprocess\t%d\tstopped\tarr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n",getClk(),temp_p->id
                 ,temp_p->arrivalTime,temp_p->runTime,temp_p->remainingTime,temp_p->wait_time);
                 // fflush(fp);
@@ -614,7 +614,7 @@ void SRTN(){
             if(cur_process->pid==-1){
                 cur_process->wait_time=getClk()-cur_process->arrivalTime;
                 printf("\nSCH::1Process %d starts at clk %d\n",cur_process->id,getClk());
-                    fp = fopen("logs/Round_Robin/scheduler2.log", "a");
+                    fp = fopen("logs/SRTN/scheduler2.log", "a");
                 fprintf(fp, "At time\t%d\tprocess\t%d\tstarted\tarr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n",getClk(),cur_process->id
                 ,cur_process->arrivalTime,cur_process->runTime,cur_process->remainingTime,cur_process->wait_time);
                 // fflush(fp);
@@ -632,7 +632,7 @@ void SRTN(){
                 if(cur_process->status==0){
                     cur_process->status=1;
                     cur_process->wait_time+=getClk()-cur_process->lstfinish_time;
-                    fp = fopen("logs/Round_Robin/scheduler2.log", "a");
+                    fp = fopen("logs/SRTN/scheduler2.log", "a");
                     fprintf(fp, "At time\t%d\tprocess\t%d\tresumed\tarr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n",getClk(),cur_process->id
                     ,cur_process->arrivalTime,cur_process->runTime,cur_process->remainingTime,cur_process->wait_time);
                     // fflush(fp);

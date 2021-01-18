@@ -35,9 +35,13 @@ FILE*fp;
 //==============General Utilities======///
 void myhandler();
 
+///=======================
+int allocate_A128(){
 
+}
 
 //================Utilities for memory alloaction ====================////
+
 // Initializing Memory 
 bool A256[4]={0,0,0,0};
 bool A128[8]={0,0,0,0,0,0,0,0};

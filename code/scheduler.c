@@ -176,7 +176,7 @@ void HPF(){
         struct msgbuff m;
         int r=msgrcv(M_PG2S_msqid , &m, sizeof(m.val),sch, !IPC_NOWAIT);
         if(r==-1){
-            printf("MMMMMMMMMMMMSCH :: Error in receiving mssggggggggggggggg %d\n",getClk());
+            printf("sCH :: Error in receiving msg %d\n",getClk());
         }
         int temp_val=m.val;
         rec=m.val;
@@ -205,7 +205,7 @@ void HPF(){
             }
             else{
                 int clk=getClk();
-                printf("SCH :: Error in receiving mssggggggggggggggg %d\n",clk);
+                printf("SCH :: Error in receiving msg %d\n",clk);
             }
 
         }
@@ -230,13 +230,13 @@ void HPF(){
             temp=1;
         }
 
-        //  printf("BLOCKKKKKKK 22222\n");
+        
 
         if(cur_process!=NULL){
-            // printf("BLOCKKKKKKK 333333\n");
+            
             if(cur_process->status!=1){ // stopped 0 finished -1 not started yet 0
             if(temp!=1){
-                // printf("BLOCKKKKKKK 55555555555555\n");
+                
                 cur_process=peek(&pQHead);
                 pop(&pQHead);
             }
@@ -260,9 +260,9 @@ void HPF(){
                     cur_process->status=1;
                 }
             }
-            // printf("BLOCKKKKKKK 555555\n");
+            
         }
-        printf("CLKKKK CYCLEEEEEEE FINISHEDDDDDDDD !!!!!!!\n");
+        
     }
 
 }
@@ -334,14 +334,14 @@ void RoundRobin(){
         struct msgbuff m;
         int r=msgrcv(M_PG2S_msqid , &m, sizeof(m.val),sch, !IPC_NOWAIT);
         if(r==-1){
-            printf("MMMMMMMMMMMMSCH :: Error in receiving mssggggggggggggggg %d\n",getClk());
+            printf("SCH :: Error in receiving msg %d\n",getClk());
         }
         int temp_val=m.val;
         rec=m.val;
         // Thie while loop is responsible for recieving the processes'data.
-        printf("SCHHHHH:: m.val %d , clk %d\n",m.val,getClk());
+        printf("SCH:: m.val %d , clk %d\n",m.val,getClk());
         while(temp_val!=0 && temp_val!=-1){
-            printf("IN LOOP :: SCHHHHH:: m.val %d , clk %d\n",m.val,getClk());
+            printf("IN LOOP :: SCH:: m.val %d , clk %d\n",m.val,getClk());
             rcv_processes+=1;
             int rec_val=msgrcv(PG2S_msqid , &arr[idx], sizeof(arr[idx].p),sch, !IPC_NOWAIT);
             if(rec_val!=-1){  
@@ -364,7 +364,7 @@ void RoundRobin(){
                     if(y==0){
                         cur_node=RR_Queue->headPtr;
                         if(cur_node==NULL)
-                        printf("179::::NULLLLLLLLLLLLLLLLLLLLLLLLLLLL\n");
+                        
                         cur_process=cur_node->processObj;
                     }
                     y+=1;
@@ -372,7 +372,7 @@ void RoundRobin(){
             }
             else{
                 int clk=getClk();
-                printf("SCH :: Error in receiving mssggggggggggggggg %d\n",clk);
+                printf("SCH :: Error in receiving msg %d\n",clk);
             }
 
         }
@@ -438,7 +438,7 @@ void RoundRobin(){
                         if(k==-1)
                             perror("Error in stopping signal\n"); 
                         else
-                            printf("SCH::SENTTTTTT SIGNALLLL clk %d STOP TO pid %ld",getClk(),prev_process->pid); 
+                            printf("SCH::sent signal clk %d STOP TO pid %ld",getClk(),prev_process->pid); 
                         fp = fopen("logs/Round_Robin/scheduler2.log", "a");
                         fprintf(fp, "At time\t%d\tprocess\t%d\tstopped\tarr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n",getClk(),prev_process->id
                         ,prev_process->arrivalTime,prev_process->runTime,prev_process->remainingTime,prev_process->wait_time);
@@ -453,7 +453,7 @@ void RoundRobin(){
                 }
             }
         }
-        printf("CLKKKK CYCLEEEEEEE FINISHEDDDDDDDD !!!!!!!\n");
+       
         print_Queue(RR_Queue);
     }
 
